@@ -1,0 +1,19 @@
+# =============================================================================
+# RAG Sandbox — Minimal RAG Stack
+# =============================================================================
+# Bare minimum for a working RAG platform: database, cache, and RAGFlow UI.
+#
+# Services: PostgreSQL, Redis, RAGFlow
+#
+# Note: RAGFlow includes built-in embedding (Infinity engine), so no
+# separate embedding service is required for the minimal stack.
+#
+# Usage:
+#   docker compose -f docker-compose-group-minimal.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - docker-compose-redis.yml
+  - docker-compose-ragflow.yml
