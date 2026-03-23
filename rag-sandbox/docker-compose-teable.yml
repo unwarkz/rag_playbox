@@ -1,0 +1,116 @@
+###############################################################################
+#  docker-compose-teable.yml — Teable spreadsheet database
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-redis.yml \
+#                   -f docker-compose-minio.yml \
+#                   -f docker-compose-teable.yml up -d
+#
+#  Image: ghcr.io/teableio/teable:latest
+#  No external port mapping — access via rag-frontend + NPM only.
+#  Storage backends:
+#    Metadata  → PostgreSQL (teable database, via Prisma)
+#    Cache     → Redis
+#    Files     → MinIO (S3-compatible)
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  teable:
+    image: ${TEABLE_IMAGE:-ghcr.io/teableio/teable:latest}
+    container_name: rag-teable
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    environment:
+      # --- PostgreSQL connection via Prisma ---
+      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/teable}
+
+      # --- Application secret ---
+      SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
+
+      # --- Public URL (used for CORS / link generation) ---
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8028}
+
+      # --- S3 storage via MinIO ---
+      BACKEND_STORAGE_PROVIDER: minio
+      BACKEND_STORAGE_MINIO_ENDPOINT: minio
+      BACKEND_STORAGE_MINIO_PORT: ${MINIO_API_PORT:-9000}
+      BACKEND_STORAGE_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      BACKEND_STORAGE_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
+      BACKEND_STORAGE_MINIO_BUCKET: ${MINIO_DEFAULT_BUCKET:-rag-documents}
+      BACKEND_STORAGE_MINIO_USE_SSL: "false"
+
+      # --- Redis ---
+      BACKEND_CACHE_PROVIDER: redis
+      BACKEND_CACHE_REDIS_URI: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/7
+
+      # --- Mail settings (placeholder — configure for production) ---
+      BACKEND_MAIL_HOST: ""
+      BACKEND_MAIL_PORT: "587"
+      BACKEND_MAIL_SECURE: "false"
+      BACKEND_MAIL_SENDER: ""
+      BACKEND_MAIL_SENDER_NAME: "Teable"
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - teable-data:/app/.cache
+
+    networks:
+      # Internal: reaches postgres, redis, minio
+      - rag-internal
+      # Frontend: exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI: http://teable:3000
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:3000/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${TEABLE_CPU_LIMIT:-0.5}"
+          memory: ${TEABLE_MEM_LIMIT:-384m}

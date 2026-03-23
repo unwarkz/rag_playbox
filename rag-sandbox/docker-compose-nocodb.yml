@@ -1,0 +1,92 @@
+###############################################################################
+#  docker-compose-nocodb.yml — NocoDB (Airtable alternative)
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-redis.yml \
+#                   -f docker-compose-nocodb.yml up -d
+#
+#  Image: nocodb/nocodb:latest
+#  No external port mapping — access via rag-frontend + NPM only.
+#  Storage backends:
+#    Metadata  → PostgreSQL (nocodb database)
+#    Cache     → Redis (db:6)
+#    Files     → local volume (nocodb-data)
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  nocodb:
+    image: ${NOCODB_IMAGE:-nocodb/nocodb:latest}
+    container_name: rag-nocodb
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    environment:
+      # --- PostgreSQL connection (nocodb database) ---
+      NC_DB: ${NC_DB:-pg://postgres:5432?u=ragadmin&p=Ch4ng3me_P0stgres!&d=nocodb}
+      # --- Authentication ---
+      NC_AUTH_JWT_SECRET: ${NC_AUTH_JWT_SECRET:-Ch4ng3me_N0coDB_JWT!}
+      # --- Redis cache (db:6) ---
+      NC_REDIS_URL: ${NC_REDIS_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/6}
+      # --- Disable telemetry ---
+      NC_DISABLE_TELE: "true"
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - nocodb-data:/usr/app/data
+
+    networks:
+      # Internal: reaches postgres, redis
+      - rag-internal
+      # Frontend: exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI: http://nocodb:8080
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8080/api/v1/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${NOCODB_CPU_LIMIT:-0.5}"
+          memory: ${NOCODB_MEM_LIMIT:-256m}

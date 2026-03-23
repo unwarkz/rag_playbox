@@ -1,0 +1,76 @@
+###############################################################################
+#  docker-compose-dbhub.yml — DBHub database MCP server
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-dbhub.yml up -d
+#
+#  Image: bytebase/dbhub:latest
+#  No external port mapping — access via rag-internal network only.
+#
+#  DBHub exposes PostgreSQL as an MCP (Model Context Protocol) server,
+#  allowing LLM agents to query and explore the database schema.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  dbhub:
+    image: ${DBHUB_IMAGE:-bytebase/dbhub:latest}
+    container_name: rag-dbhub
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    environment:
+      # --- PostgreSQL connection string ---
+      DSN: ${DBHUB_DSN:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/ragdb}
+      TZ: ${TZ:-UTC}
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — MCP server reached via rag-internal
+    # MCP endpoint: http://dbhub:8033
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8033/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${DBHUB_CPU_LIMIT:-0.5}"
+          memory: ${DBHUB_MEM_LIMIT:-256m}

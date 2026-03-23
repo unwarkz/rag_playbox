@@ -1,0 +1,179 @@
+###############################################################################
+#  docker-compose-litellm.yml — LiteLLM unified LLM proxy
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-litellm.yml up -d
+#
+#  Image: ghcr.io/berriai/litellm:main-v1.82.3-stable
+#  No external port mapping — access via rag-internal network only.
+#
+#  LiteLLM acts as a single OpenAI-compatible gateway to:
+#    - Local models via Ollama (qwen3:14b, qwen3:1.7b)
+#    - Cloud models via OpenRouter (nemotron, kimi-k2.5, glm-5, minimax)
+#    - Qwen cloud API (qwen3.5)
+#    - Google Gemini (gemini-2.5-flash)
+#    - Moonshot Kimi (direct)
+#
+#  Config is embedded inline via entrypoint heredoc for Portainer compatibility.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  litellm:
+    image: ${LITELLM_IMAGE:-ghcr.io/berriai/litellm:main-v1.82.3-stable}
+    container_name: rag-litellm
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    environment:
+      # --- Master key for LiteLLM admin API ---
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-Ch4ng3me_L1teLLM_Master!}
+
+      # --- External LLM provider API keys ---
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-sk-or-v1-your_key_here}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-your_gemini_key_here}
+      QWEN_API_KEY: ${QWEN_API_KEY:-your_qwen_key_here}
+      KIMI_API_KEY: ${KIMI_API_KEY:-your_kimi_key_here}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY:-your_minimax_key_here}
+      HF_TOKEN: ${HF_TOKEN:-hf_your_token_here}
+
+      TZ: ${TZ:-UTC}
+
+    # -------------------------------------------------------------------------
+    # Inline config.yaml — written at container start via heredoc.
+    # This avoids a bind-mount to a host file and works in Portainer stacks.
+    # -------------------------------------------------------------------------
+    entrypoint:
+      - bash
+      - -c
+      - |
+        cat > /app/config.yaml << 'LITELLM_CONFIG'
+        # =======================================================================
+        # LiteLLM Proxy Configuration — RAG Sandbox
+        # =======================================================================
+
+        model_list:
+          # --- Local models via Ollama ---
+          - model_name: qwen3-14b
+            litellm_params:
+              model: ollama/qwen3:14b
+              api_base: http://ollama:11434
+              stream: true
+
+          - model_name: qwen3-1.7b
+            litellm_params:
+              model: ollama/qwen3:1.7b
+              api_base: http://ollama:11434
+              stream: true
+
+          # --- Cloud models via OpenRouter ---
+          - model_name: nemotron-3-super
+            litellm_params:
+              model: openrouter/nvidia/nemotron-3-super
+              api_key: os.environ/OPENROUTER_API_KEY
+
+          - model_name: kimi-k2.5
+            litellm_params:
+              model: openrouter/moonshotai/kimi-k2.5
+              api_key: os.environ/OPENROUTER_API_KEY
+
+          - model_name: glm-5
+            litellm_params:
+              model: openrouter/thudm/glm-5
+              api_key: os.environ/OPENROUTER_API_KEY
+
+          - model_name: minimax-m2.7
+            litellm_params:
+              model: openrouter/minimax/minimax-m2.7
+              api_key: os.environ/OPENROUTER_API_KEY
+
+          # --- Qwen cloud API (DashScope) ---
+          - model_name: qwen3.5-cloud
+            litellm_params:
+              model: openai/qwen3.5
+              api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
+              api_key: os.environ/QWEN_API_KEY
+
+          # --- Google Gemini ---
+          - model_name: gemini-2.5-flash
+            litellm_params:
+              model: gemini/gemini-2.5-flash
+              api_key: os.environ/GEMINI_API_KEY
+
+          # --- Moonshot Kimi (direct API) ---
+          - model_name: kimi-direct
+            litellm_params:
+              model: openai/moonshot-v1-auto
+              api_base: https://api.moonshot.cn/v1
+              api_key: os.environ/KIMI_API_KEY
+
+        litellm_settings:
+          drop_params: true
+          request_timeout: 120
+          num_retries: 3
+          set_verbose: false
+          cache: true
+          cache_params:
+            type: redis
+            host: redis
+            port: 6379
+            password: os.environ/REDIS_PASSWORD
+            db: 8
+
+        general_settings:
+          master_key: os.environ/LITELLM_MASTER_KEY
+          database_url: os.environ/LITELLM_DB_URL
+          alerting:
+            - log
+        LITELLM_CONFIG
+
+        exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0
+
+    volumes:
+      - litellm-data:/app/data
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — reached by other services via rag-internal
+    # API: http://litellm:4000
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:4000/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${LITELLM_CPU_LIMIT:-1.0}"
+          memory: ${LITELLM_MEM_LIMIT:-512m}
