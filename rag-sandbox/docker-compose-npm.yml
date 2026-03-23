@@ -70,11 +70,8 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${NPM_DB_CPU_LIMIT:-0.5}"
-          memory: ${NPM_DB_MEM_LIMIT:-256m}
+    cpus: ${NPM_DB_CPU_LIMIT:-0.5}
+    mem_limit: ${NPM_DB_MEM_LIMIT:-256m}
 
   # ---------------------------------------------------------------------------
   # nginx-proxy-manager — Reverse proxy, SSL termination, admin UI
@@ -123,8 +120,5 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${NPM_CPU_LIMIT:-0.5}"
-          memory: ${NPM_MEM_LIMIT:-256m}
+    cpus: ${NPM_CPU_LIMIT:-0.5}
+    mem_limit: ${NPM_MEM_LIMIT:-256m}

@@ -60,8 +60,5 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${TIKA_CPU_LIMIT:-1.0}"
-          memory: ${TIKA_MEM_LIMIT:-512m}
+    cpus: ${TIKA_CPU_LIMIT:-1.0}
+    mem_limit: ${TIKA_MEM_LIMIT:-512m}

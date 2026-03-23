@@ -64,8 +64,5 @@ services:
       retries: 5
       start_period: 60s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DOCLING_CPU_LIMIT:-2.0}"
-          memory: ${DOCLING_MEM_LIMIT:-1024m}
+    cpus: ${DOCLING_CPU_LIMIT:-2.0}
+    mem_limit: ${DOCLING_MEM_LIMIT:-1024m}

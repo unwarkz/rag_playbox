@@ -94,8 +94,5 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${LANGFUSE_CPU_LIMIT:-1.0}"
-          memory: ${LANGFUSE_MEM_LIMIT:-512m}
+    cpus: ${LANGFUSE_CPU_LIMIT:-1.0}
+    mem_limit: ${LANGFUSE_MEM_LIMIT:-512m}

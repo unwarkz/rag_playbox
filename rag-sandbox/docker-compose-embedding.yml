@@ -78,8 +78,5 @@ services:
       retries: 8
       start_period: 120s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${EMBEDDING_CPU_LIMIT:-2.0}"
-          memory: ${EMBEDDING_MEM_LIMIT:-1024m}
+    cpus: ${EMBEDDING_CPU_LIMIT:-2.0}
+    mem_limit: ${EMBEDDING_MEM_LIMIT:-1024m}

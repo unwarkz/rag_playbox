@@ -133,11 +133,8 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DIFY_API_CPU_LIMIT:-1.5}"
-          memory: ${DIFY_API_MEM_LIMIT:-768m}
+    cpus: ${DIFY_API_CPU_LIMIT:-1.5}
+    mem_limit: ${DIFY_API_MEM_LIMIT:-768m}
 
   # ---------------------------------------------------------------------------
   # dify-worker — Celery background worker (MODE=worker)
@@ -168,11 +165,8 @@ services:
     # Workers don't expose HTTP — no healthcheck endpoint
     # Celery worker health can be checked via celery inspect if needed
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DIFY_WORKER_CPU_LIMIT:-1.0}"
-          memory: ${DIFY_WORKER_MEM_LIMIT:-512m}
+    cpus: ${DIFY_WORKER_CPU_LIMIT:-1.0}
+    mem_limit: ${DIFY_WORKER_MEM_LIMIT:-512m}
 
   # ---------------------------------------------------------------------------
   # dify-sandbox — Isolated code execution environment
@@ -205,11 +199,8 @@ services:
       retries: 3
       start_period: 10s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DIFY_SANDBOX_CPU_LIMIT:-0.5}"
-          memory: ${DIFY_SANDBOX_MEM_LIMIT:-256m}
+    cpus: ${DIFY_SANDBOX_CPU_LIMIT:-0.5}
+    mem_limit: ${DIFY_SANDBOX_MEM_LIMIT:-256m}
 
   # ---------------------------------------------------------------------------
   # dify-web — Next.js frontend
@@ -249,8 +240,5 @@ services:
       retries: 5
       start_period: 20s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DIFY_WEB_CPU_LIMIT:-0.5}"
-          memory: ${DIFY_WEB_MEM_LIMIT:-256m}
+    cpus: ${DIFY_WEB_CPU_LIMIT:-0.5}
+    mem_limit: ${DIFY_WEB_MEM_LIMIT:-256m}

@@ -62,8 +62,5 @@ services:
       retries: 5
       start_period: 15s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${DBHUB_CPU_LIMIT:-0.5}"
-          memory: ${DBHUB_MEM_LIMIT:-256m}
+    cpus: ${DBHUB_CPU_LIMIT:-0.5}
+    mem_limit: ${DBHUB_MEM_LIMIT:-256m}

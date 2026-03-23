@@ -98,8 +98,5 @@ services:
 
     shm_size: 256mb
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${POSTGRES_CPU_LIMIT:-2.0}"
-          memory: ${POSTGRES_MEM_LIMIT:-1536m}
+    cpus: ${POSTGRES_CPU_LIMIT:-2.0}
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1536m}

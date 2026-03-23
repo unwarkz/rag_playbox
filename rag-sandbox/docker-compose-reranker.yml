@@ -79,8 +79,5 @@ services:
       retries: 8
       start_period: 120s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${RERANKER_CPU_LIMIT:-1.0}"
-          memory: ${RERANKER_MEM_LIMIT:-768m}
+    cpus: ${RERANKER_CPU_LIMIT:-1.0}
+    mem_limit: ${RERANKER_MEM_LIMIT:-768m}

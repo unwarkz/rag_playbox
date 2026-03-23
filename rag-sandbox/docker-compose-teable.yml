@@ -102,8 +102,5 @@ services:
       retries: 5
       start_period: 45s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${TEABLE_CPU_LIMIT:-0.5}"
-          memory: ${TEABLE_MEM_LIMIT:-384m}
+    cpus: ${TEABLE_CPU_LIMIT:-0.5}
+    mem_limit: ${TEABLE_MEM_LIMIT:-384m}

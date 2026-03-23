@@ -78,8 +78,5 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${NOCODB_CPU_LIMIT:-0.5}"
-          memory: ${NOCODB_MEM_LIMIT:-256m}
+    cpus: ${NOCODB_CPU_LIMIT:-0.5}
+    mem_limit: ${NOCODB_MEM_LIMIT:-256m}

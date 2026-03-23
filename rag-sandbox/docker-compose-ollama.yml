@@ -73,8 +73,5 @@ services:
       retries: 5
       start_period: 30s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${OLLAMA_CPU_LIMIT:-4.0}"
-          memory: ${OLLAMA_MEM_LIMIT:-3072m}
+    cpus: ${OLLAMA_CPU_LIMIT:-4.0}
+    mem_limit: ${OLLAMA_MEM_LIMIT:-3072m}

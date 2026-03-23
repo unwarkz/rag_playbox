@@ -24,11 +24,8 @@ x-common: &common
       max-file: ${LOG_MAX_FILE:-3}
 
 x-default-resources: &default-resources
-  deploy:
-    resources:
-      limits:
-        cpus: ${DEFAULT_CPU_LIMIT:-1.0}
-        memory: ${DEFAULT_MEM_LIMIT:-512m}
+  cpus: ${DEFAULT_CPU_LIMIT:-1.0}
+  mem_limit: ${DEFAULT_MEM_LIMIT:-512m}
 
 x-depends-db: &depends-db
   depends_on:

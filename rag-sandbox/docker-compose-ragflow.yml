@@ -112,8 +112,5 @@ services:
       retries: 5
       start_period: 60s
 
-    deploy:
-      resources:
-        limits:
-          cpus: "${RAGFLOW_CPU_LIMIT:-2.0}"
-          memory: ${RAGFLOW_MEM_LIMIT:-1536m}
+    cpus: ${RAGFLOW_CPU_LIMIT:-2.0}
+    mem_limit: ${RAGFLOW_MEM_LIMIT:-1536m}

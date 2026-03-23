@@ -120,7 +120,6 @@ docker compose -f docker-compose-full.yml up -d
 
 # 5. Access services
 #    Via NPM admin:  http://<server>:8020  (admin@example.com / changeme — change immediately)
-#    Via SSH tunnel:  ssh -L 9380:localhost:9380 user@server  →  http://localhost:9380 (RAGFlow)
 ```
 
 ---
@@ -163,13 +162,13 @@ rag-sandbox/
 ├── docker-compose-dbhub.yml             # DBHub MCP server
 │
 │   ── Group / profile files ──
-├── docker-compose-group-minimal.yml     # PG + Redis + RAGFlow
+├── docker-compose-group-minimal.yml     # PG + Redis + MinIO + Embedding + RAGFlow
 ├── docker-compose-group-databases.yml   # PG + Redis + Qdrant + Neo4j + MinIO
 ├── docker-compose-group-ai.yml          # Embedding + Reranker + Ollama + Docling + Tika + Unstructured
-├── docker-compose-group-rag.yml         # LightRAG + Mem0 + Hindsight
-├── docker-compose-group-ui.yml          # RAGFlow + Dify + Open WebUI + Pipelines + AnythingLLM
-├── docker-compose-group-cms.yml         # NocoDB + Directus + Teable
-├── docker-compose-group-infra.yml       # NPM + LiteLLM + Langfuse + DBHub
+├── docker-compose-group-rag.yml         # PG + Redis + Qdrant + Neo4j + Embedding + LightRAG + Mem0 + Hindsight
+├── docker-compose-group-ui.yml          # PG + Redis + Qdrant + MinIO + Ollama + Embedding + RAGFlow + Dify + Open WebUI + Pipelines + AnythingLLM
+├── docker-compose-group-cms.yml         # PG + Redis + MinIO + NocoDB + Directus + Teable
+├── docker-compose-group-infra.yml       # PG + NPM + LiteLLM + Langfuse + DBHub
 ├── docker-compose-minimal.yml           # PG + Redis + Qdrant + MinIO + Embedding + Ollama + Open WebUI
 ├── docker-compose-full.yml              # All services
 │
@@ -182,7 +181,6 @@ rag-sandbox/
 │
 │   ── Config files ──
 ├── configs/
-│   ├── postgres/                        # PostgreSQL init scripts
 │   ├── litellm/                         # LiteLLM config.yaml
 │   └── lightrag/                        # LightRAG environment overrides
 │
@@ -199,13 +197,13 @@ rag-sandbox/
 
 | File | Services | Use Case |
 |------|----------|----------|
-| `group-minimal` | PostgreSQL, Redis, RAGFlow | Bare minimum RAG platform |
+| `group-minimal` | PostgreSQL, Redis, MinIO, Embedding, RAGFlow | Bare minimum RAG platform |
 | `group-databases` | PostgreSQL, Redis, Qdrant, Neo4j, MinIO | All storage backends |
 | `group-ai` | Embedding, Reranker, Ollama, Docling, Tika, Unstructured | AI inference & document processing |
-| `group-rag` | LightRAG, Mem0, Hindsight | RAG & agent memory engines |
-| `group-ui` | RAGFlow, Dify, Open WebUI, Pipelines, AnythingLLM | User-facing platforms |
-| `group-cms` | NocoDB, Directus, Teable | Data management & headless CMS |
-| `group-infra` | NPM, LiteLLM, Langfuse, DBHub | Infrastructure & observability |
+| `group-rag` | + PostgreSQL, Redis, Qdrant, Neo4j, Embedding, LightRAG, Mem0, Hindsight | RAG & agent memory engines |
+| `group-ui` | + PostgreSQL, Redis, Qdrant, MinIO, Ollama, Embedding, RAGFlow, Dify, Open WebUI, Pipelines, AnythingLLM | User-facing platforms |
+| `group-cms` | + PostgreSQL, Redis, MinIO, NocoDB, Directus, Teable | Data management & headless CMS |
+| `group-infra` | + PostgreSQL, NPM, LiteLLM, Langfuse, DBHub | Infrastructure & observability |
 | `minimal` | PostgreSQL, Redis, Qdrant, MinIO, Embedding, Ollama, Open WebUI | Standard dev stack |
 | `full` | **All 27+ services** | Complete platform |
 
@@ -232,7 +230,7 @@ docker compose \
 
 ## Resource Allocation
 
-All limits are configured via `.env` variables. Defaults are tuned for a **10 GB RAM / 8 CPU** server.
+All limits are configured via `.env` variables and applied using Compose V2 `cpus` / `mem_limit` keys (enforced without Swarm mode). Defaults are tuned for a **10 GB RAM / 8 CPU** server.
 
 | Service | Container | CPU Limit | Memory Limit | Image |
 |---------|-----------|-----------|--------------|-------|
@@ -438,7 +436,7 @@ Four containers from a single compose file:
 
 | Container | Role | Internal Endpoint |
 |-----------|------|-------------------|
-| `rag-dify-api` | API server | `dify-api:5002` |
+| `rag-dify-api` | API server | `dify-api:5001` |
 | `rag-dify-worker` | Celery worker | — (no HTTP) |
 | `rag-dify-sandbox` | Code execution | `dify-sandbox:8194` |
 | `rag-dify-web` | Next.js frontend | `dify-web:3000` |
@@ -620,18 +618,6 @@ Most compose files work directly in Portainer. The one exception is **PostgreSQL
 
 4. Enable **SSL** via Let's Encrypt for each proxy host.
 
-### Via SSH Tunnel (Development)
-
-```bash
-ssh -L 9380:localhost:9380 user@server   # RAGFlow
-ssh -L 3000:localhost:3000 user@server   # Langfuse / Dify Web / Teable
-ssh -L 8080:localhost:8080 user@server   # Open WebUI / NocoDB
-ssh -L 8055:localhost:8055 user@server   # Directus
-ssh -L 8020:localhost:8020 user@server   # NPM Admin
-```
-
-> **Note:** SSH tunnel requires the optional `*_HOST_PORT` variables to be set in `.env` for the services you want to tunnel.
-
 ### Internal Service Endpoints
 
 For inter-service communication (e.g., configuring LLM endpoints in Dify):
@@ -657,7 +643,7 @@ For inter-service communication (e.g., configuring LLM endpoints in Dify):
 | Hindsight API | `hindsight:8889` | HTTP REST |
 | Hindsight UI | `hindsight:9999` | HTTP |
 | RAGFlow | `ragflow:9380` | HTTP |
-| Dify API | `dify-api:5002` | HTTP REST |
+| Dify API | `dify-api:5001` | HTTP REST |
 | Dify Sandbox | `dify-sandbox:8194` | HTTP |
 | Dify Web | `dify-web:3000` | HTTP |
 | Open WebUI | `openwebui:8080` | HTTP |
