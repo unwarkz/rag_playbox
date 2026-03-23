@@ -23,13 +23,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -45,8 +43,7 @@ services:
     image: ${RAGFLOW_IMAGE:-infiniflow/ragflow:v0.24.0}
     container_name: rag-ragflow
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       # --- Document engine ---

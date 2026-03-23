@@ -16,13 +16,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -38,8 +36,7 @@ services:
     image: ${OPENWEBUI_PIPELINES_IMAGE:-ghcr.io/open-webui/pipelines:main}
     container_name: rag-pipelines
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       PIPELINES_API_KEY: ${OPENWEBUI_PIPELINES_API_KEY:-Ch4ng3me_P1pelines!}

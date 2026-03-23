@@ -12,13 +12,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -34,8 +32,7 @@ services:
     image: ${MINIO_IMAGE:-pgsty/minio:latest}
     container_name: rag-minio
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     # -------------------------------------------------------------------------
     # Start MinIO server with console on a separate port:

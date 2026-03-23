@@ -24,13 +24,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -46,8 +44,7 @@ services:
     image: ${MEM0_IMAGE:-mem0ai/mem0-server:latest}
     container_name: rag-mem0
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       # --- LLM configuration (Ollama via OpenAI-compatible API) ---

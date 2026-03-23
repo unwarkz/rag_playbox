@@ -12,13 +12,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -34,8 +32,7 @@ services:
     image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.16.3}
     container_name: rag-qdrant
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       # API key protects both REST and gRPC endpoints

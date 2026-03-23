@@ -24,13 +24,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -46,8 +44,7 @@ services:
     image: ${LIGHTRAG_IMAGE:-ghcr.io/hkuds/lightrag:latest}
     container_name: rag-lightrag
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       # --- LLM configuration (via Ollama, OpenAI-compatible) ---

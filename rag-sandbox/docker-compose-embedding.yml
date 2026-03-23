@@ -14,13 +14,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -36,8 +34,7 @@ services:
     image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
     container_name: rag-embedding
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     # -------------------------------------------------------------------------
     # Infinity v2 flags:
