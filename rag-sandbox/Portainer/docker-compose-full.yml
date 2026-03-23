@@ -35,7 +35,7 @@ include:
   - ../docker-compose-embedding.yml
   - ../docker-compose-reranker.yml
   - ../docker-compose-ollama.yml
-  - ../docker-compose-docling.yml
+#  - ../docker-compose-docling.yml
   - ../docker-compose-tika.yml
   - ../docker-compose-unstructured.yml
   # RAG and memory
