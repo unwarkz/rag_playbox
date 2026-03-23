@@ -1,0 +1,106 @@
+###############################################################################
+#  docker-compose-hindsight.yml — Hindsight agent memory & timeline
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-hindsight.yml up -d
+#
+#  Image: ghcr.io/vectorize-io/hindsight:latest
+#  Ports (internal): 8889 (API), 9999 (WebUI)
+#  No external port mapping — access via rag-frontend network + NPM only.
+#
+#  Backends:
+#    Database   → PostgreSQL (hindsight database)
+#    LLM        → Ollama (OpenAI-compatible)
+#    Embeddings → Infinity embedding server
+#    Reranker   → Infinity reranker server
+#
+#  Consumers: end-users via the built-in WebUI, API clients.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  hindsight:
+    image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight:latest}
+    container_name: rag-hindsight
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      # --- Database (PostgreSQL — hindsight database) ---
+      DATABASE_URL: ${HINDSIGHT_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/hindsight}
+
+      # --- LLM configuration (Ollama via OpenAI-compatible API) ---
+      LLM_BASE_URL: http://ollama:${OLLAMA_PORT:-11434}/v1
+      LLM_MODEL: ${MEM0_LLM_MODEL:-qwen3:14b}
+      LLM_API_KEY: ollama
+
+      # --- Embedding (via Infinity) ---
+      EMBEDDING_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
+      EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+
+      # --- Reranker (via Infinity reranker instance) ---
+      RERANKER_BASE_URL: http://reranker:${RERANK_PORT:-7998}/v1
+      RERANKER_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+
+      # --- Server settings ---
+      API_PORT: ${HINDSIGHT_API_PORT:-8889}
+      UI_PORT: ${HINDSIGHT_UI_PORT:-9999}
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - hindsight-data:/home/hindsight/.hindsight
+
+    networks:
+      # Internal: reaches postgres, ollama, embedding, reranker
+      - rag-internal
+      # Frontend: WebUI (port 9999) exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # API:   http://hindsight:8889
+    # WebUI: http://hindsight:9999
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:${HINDSIGHT_API_PORT:-8889}/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${HINDSIGHT_CPU_LIMIT:-1.0}"
+          memory: ${HINDSIGHT_MEM_LIMIT:-512m}

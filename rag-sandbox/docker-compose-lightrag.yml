@@ -1,0 +1,139 @@
+###############################################################################
+#  docker-compose-lightrag.yml — LightRAG graph-augmented RAG engine
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-redis.yml \
+#                   -f docker-compose-qdrant.yml \
+#                   -f docker-compose-neo4j.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-lightrag.yml up -d
+#
+#  Image: ghcr.io/hkuds/lightrag:latest
+#  Port (internal): 9621 (WebUI + API)
+#  No external port mapping — access via rag-frontend network + NPM only.
+#
+#  Storage backends:
+#    KV & doc status → PostgreSQL (lightrag database)
+#    Vectors         → Qdrant
+#    Graph           → Neo4j
+#    Cache           → Redis (db:3)
+#
+#  Consumers: end-users via the built-in WebUI, API clients.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  lightrag:
+    image: ${LIGHTRAG_IMAGE:-ghcr.io/hkuds/lightrag:latest}
+    container_name: rag-lightrag
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      # --- LLM configuration (via Ollama, OpenAI-compatible) ---
+      LLM_BINDING: ${LIGHTRAG_LLM_BINDING:-openai}
+      LLM_BINDING_HOST: ${LIGHTRAG_LLM_BINDING_HOST:-http://ollama:11434/v1}
+      LLM_MODEL: ${LIGHTRAG_LLM_MODEL:-qwen3:14b}
+      LLM_API_KEY: ${LIGHTRAG_LLM_API_KEY:-ollama}
+
+      # --- Embedding configuration (via Infinity) ---
+      EMBEDDING_BINDING: ${LIGHTRAG_EMBEDDING_BINDING:-openai}
+      EMBEDDING_BINDING_HOST: ${LIGHTRAG_EMBEDDING_BINDING_HOST:-http://embedding:7997/v1}
+      EMBEDDING_MODEL: ${LIGHTRAG_EMBEDDING_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      EMBEDDING_DIM: ${LIGHTRAG_EMBEDDING_DIM:-1024}
+
+      # --- Storage backends ---
+      KV_STORAGE: PGKVStorage
+      DOC_STATUS_STORAGE: PGDocStatusStorage
+      VECTOR_STORAGE: QdrantVectorDBStorage
+      GRAPH_STORAGE: Neo4JStorage
+
+      # --- PostgreSQL connection (lightrag database) ---
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-ragadmin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}
+      POSTGRES_DATABASE: ${POSTGRES_DB_LIGHTRAG:-lightrag}
+
+      # --- Redis (db 3 — avoids conflicts with Dify db:1/2) ---
+      REDIS_URI: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/3
+
+      # --- Qdrant vector database ---
+      QDRANT_URL: http://qdrant:${QDRANT_REST_PORT:-6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+
+      # --- Neo4j graph database ---
+      NEO4J_URI: bolt://neo4j:${NEO4J_BOLT_PORT:-7687}
+      NEO4J_USERNAME: ${NEO4J_USER:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-Ch4ng3me_Neo4j!}
+
+      # --- Server settings ---
+      PORT: ${LIGHTRAG_PORT:-9621}
+      WORKING_DIR: /app/data
+      MAX_TOKENS: ${LIGHTRAG_MAX_TOKENS:-32768}
+      MAX_ASYNC: ${LIGHTRAG_MAX_ASYNC:-4}
+      CHUNK_SIZE: ${LIGHTRAG_CHUNK_SIZE:-1200}
+      CHUNK_OVERLAP: ${LIGHTRAG_CHUNK_OVERLAP:-100}
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - lightrag-data:/app/data
+
+    networks:
+      # Internal: reaches postgres, redis, qdrant, neo4j, ollama, embedding
+      - rag-internal
+      # Frontend: WebUI exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI + API: http://lightrag:9621
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:${LIGHTRAG_PORT:-9621}/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${LIGHTRAG_CPU_LIMIT:-1.0}"
+          memory: ${LIGHTRAG_MEM_LIMIT:-512m}
