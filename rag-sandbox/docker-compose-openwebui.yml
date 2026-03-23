@@ -23,13 +23,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -45,8 +43,7 @@ services:
     image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:main}
     container_name: rag-openwebui
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       # --- Ollama backend ---
