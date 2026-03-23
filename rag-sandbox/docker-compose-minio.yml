@@ -1,0 +1,78 @@
+###############################################################################
+#  docker-compose-minio.yml — MinIO S3-compatible object storage
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-minio.yml up -d
+#
+#  Image: pgsty/minio:latest
+#  Ports (internal): 9000 (S3 API), 9001 (Console WebUI)
+#  No external port mapping — S3 API via rag-internal, Console via NPM.
+#  Consumers: Dify, RAGFlow, document upload pipelines.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  minio:
+    image: ${MINIO_IMAGE:-pgsty/minio:latest}
+    container_name: rag-minio
+
+    <<: *restart
+    <<: *logging
+
+    # -------------------------------------------------------------------------
+    # Start MinIO server with console on a separate port:
+    #   - /data is the storage root (backed by minio-data volume)
+    #   - --console-address binds the WebUI to :9001
+    # -------------------------------------------------------------------------
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
+
+    volumes:
+      - minio-data:/data
+
+    networks:
+      # S3 API (port 9000) — reachable by all backend services
+      - rag-internal
+      # Console WebUI (port 9001) — accessible via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — Console is exposed through NPM
+    # S3 API:  http://minio:9000   Console: http://minio:9001
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9000/minio/health/live || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${MINIO_CPU_LIMIT:-0.5}"
+          memory: ${MINIO_MEM_LIMIT:-256m}
