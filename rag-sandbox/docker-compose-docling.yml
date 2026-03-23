@@ -38,11 +38,11 @@ services:
 
     environment:
       # Log verbosity for the Docling server
-      DOCLING_SERVE_LOG_LEVEL: INFO
+      DOCLING_SERVE_LOG_LEVEL: ${LOG_LEVEL:-INFO}
       # Number of synchronous worker threads for document conversion
-      DOCLING_SERVE_MAX_SYNC_WORKERS: "2"
+      DOCLING_SERVE_MAX_SYNC_WORKERS: "${DOCLING_WORKERS:-2}"
       # Force CPU-only inference for OCR and layout models
-      TORCH_DEVICE: cpu
+      TORCH_DEVICE: ${DOCLING_DEVICE:-cpu}
 
     volumes:
       - docling-cache:/tmp/docling

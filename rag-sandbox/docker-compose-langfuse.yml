@@ -50,7 +50,7 @@ services:
       TELEMETRY_ENABLED: ${LANGFUSE_TELEMETRY_ENABLED:-false}
 
       # --- Experimental features ---
-      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "true"
+      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "${LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES:-true}"
 
       # --- Initial org / project bootstrap ---
       LANGFUSE_INIT_ORG_ID: ${LANGFUSE_INIT_ORG_ID:-rag-sandbox}

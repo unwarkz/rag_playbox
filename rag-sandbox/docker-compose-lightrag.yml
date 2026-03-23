@@ -60,10 +60,10 @@ services:
       EMBEDDING_DIM: ${LIGHTRAG_EMBEDDING_DIM:-1024}
 
       # --- Storage backends ---
-      KV_STORAGE: PGKVStorage
-      DOC_STATUS_STORAGE: PGDocStatusStorage
-      VECTOR_STORAGE: QdrantVectorDBStorage
-      GRAPH_STORAGE: Neo4JStorage
+      KV_STORAGE: ${LIGHTRAG_KV_STORAGE:-PGKVStorage}
+      DOC_STATUS_STORAGE: ${LIGHTRAG_DOC_STATUS_STORAGE:-PGDocStatusStorage}
+      VECTOR_STORAGE: ${LIGHTRAG_VECTOR_STORAGE:-QdrantVectorDBStorage}
+      GRAPH_STORAGE: ${LIGHTRAG_GRAPH_STORAGE:-Neo4JStorage}
 
       # --- PostgreSQL connection (lightrag database) ---
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}

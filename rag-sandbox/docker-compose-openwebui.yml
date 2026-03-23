@@ -58,12 +58,12 @@ services:
       OPENAI_API_KEYS: ${OPENWEBUI_OPENAI_API_KEYS:-}
 
       # --- Vector database (Qdrant) ---
-      VECTOR_DB: qdrant
+      VECTOR_DB: ${OPENWEBUI_VECTOR_DB:-qdrant}
       QDRANT_URI: http://qdrant:${QDRANT_REST_PORT:-6333}
       QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
       # --- RAG embedding engine (Infinity via OpenAI-compatible API) ---
-      RAG_EMBEDDING_ENGINE: openai
+      RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
       RAG_OPENAI_API_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
       RAG_OPENAI_API_KEY: ${OPENWEBUI_RAG_OPENAI_API_KEY:-none}
       RAG_EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
@@ -80,10 +80,10 @@ services:
       ENABLE_SIGNUP: ${OPENWEBUI_ENABLE_SIGNUP:-true}
 
       # --- SMTP settings (placeholder — configure for production) ---
-      SMTP_SERVER: ${OPENWEBUI_SMTP_SERVER:-}
-      SMTP_PORT: ${OPENWEBUI_SMTP_PORT:-587}
-      SMTP_USERNAME: ${OPENWEBUI_SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${OPENWEBUI_SMTP_PASSWORD:-}
+      SMTP_SERVER: ${SMTP_HOST:-}
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
 
       TZ: ${TZ:-UTC}
 

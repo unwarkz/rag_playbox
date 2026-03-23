@@ -58,24 +58,24 @@ services:
       REDIS: ${DIRECTUS_REDIS:-redis://:Ch4ng3me_R3dis!@redis:6379/3}
 
       # --- S3 file storage via MinIO ---
-      STORAGE_LOCATIONS: s3
-      STORAGE_S3_DRIVER: s3
+      STORAGE_LOCATIONS: ${DIRECTUS_STORAGE_LOCATIONS:-s3}
+      STORAGE_S3_DRIVER: ${DIRECTUS_STORAGE_S3_DRIVER:-s3}
       STORAGE_S3_KEY: ${MINIO_ROOT_USER:-minioadmin}
       STORAGE_S3_SECRET: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
       STORAGE_S3_BUCKET: ${MINIO_DEFAULT_BUCKET:-rag-documents}
-      STORAGE_S3_REGION: us-east-1
+      STORAGE_S3_REGION: ${DIRECTUS_STORAGE_S3_REGION:-us-east-1}
       STORAGE_S3_ENDPOINT: http://minio:${MINIO_API_PORT:-9000}
-      STORAGE_S3_FORCE_PATH_STYLE: "true"
+      STORAGE_S3_FORCE_PATH_STYLE: "${DIRECTUS_STORAGE_S3_FORCE_PATH_STYLE:-true}"
 
       # --- Admin credentials (first-run bootstrap) ---
       ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-Ch4ng3me_D1rectus_Admin!}
 
       # --- Email / SMTP (placeholder — configure for production) ---
-      EMAIL_FROM: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
-      EMAIL_TRANSPORT: smtp
-      EMAIL_SMTP_HOST: ""
-      EMAIL_SMTP_PORT: "587"
+      EMAIL_FROM: ${SMTP_FROM:-admin@example.com}
+      EMAIL_TRANSPORT: ${DIRECTUS_EMAIL_TRANSPORT:-smtp}
+      EMAIL_SMTP_HOST: ${SMTP_HOST:-}
+      EMAIL_SMTP_PORT: "${SMTP_PORT:-587}"
 
       # --- Public URL for CORS / link generation ---
       PUBLIC_URL: ${NC_PUBLIC_URL:-http://localhost:8027}

@@ -46,7 +46,7 @@ services:
       # --- Redis cache (db:6) ---
       NC_REDIS_URL: ${NC_REDIS_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/6}
       # --- Disable telemetry ---
-      NC_DISABLE_TELE: "true"
+      NC_DISABLE_TELE: "${NC_DISABLE_TELE:-true}"
       TZ: ${TZ:-UTC}
 
     volumes:
