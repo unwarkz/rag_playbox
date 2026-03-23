@@ -18,3 +18,5 @@ include:
   - docker-compose-postgres.yml
   - ../docker-compose-redis.yml
   - ../docker-compose-ragflow.yml
+  - ../docker-compose-minio.yml
+  
