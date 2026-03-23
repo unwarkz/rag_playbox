@@ -1,0 +1,65 @@
+# =============================================================================
+# LiteLLM Proxy Configuration
+# Unified gateway for local (Ollama) and remote LLM providers.
+# =============================================================================
+
+model_list:
+  # --- Local models via Ollama -------------------------------------------
+  - model_name: qwen3:14b
+    litellm_params:
+      model: ollama/qwen3:14b
+      api_base: http://ollama:11434
+
+  - model_name: qwen3:1.7b
+    litellm_params:
+      model: ollama/qwen3:1.7b
+      api_base: http://ollama:11434
+
+  # --- Remote models via OpenRouter --------------------------------------
+  - model_name: nemotron-3-super
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-super
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: kimi-k2.5
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2.5
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: glm-5
+    litellm_params:
+      model: openrouter/zhipu/glm-5
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: minimax-m2.7
+    litellm_params:
+      model: openrouter/minimax/minimax-m2.7
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  # --- Qwen API (DashScope) ----------------------------------------------
+  - model_name: qwen3.5-cloud
+    litellm_params:
+      model: dashscope/qwen3.5
+      api_key: os.environ/DASHSCOPE_API_KEY
+
+  # --- Gemini -------------------------------------------------------------
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # --- Moonshot API (Kimi direct) -----------------------------------------
+  - model_name: kimi-direct
+    litellm_params:
+      model: openai/moonshot-v1-auto
+      api_base: https://api.moonshot.cn/v1
+      api_key: os.environ/MOONSHOT_API_KEY
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  num_retries: 3
+  request_timeout: 120
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
