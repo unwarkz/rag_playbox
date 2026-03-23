@@ -1,0 +1,22 @@
+# =============================================================================
+# RAG Sandbox — Database Layer Group (Portainer)
+# =============================================================================
+# Database layer — all storage backends.
+#
+# Services: PostgreSQL (Portainer), Redis, Qdrant, Neo4j, MinIO
+#
+# Uses the Portainer-specific postgres (no build context) and reuses all
+# other per-service compose files from the parent directory.
+#
+# Usage:
+#   Portainer → Stacks → Add stack → Repository → point to this file
+#   Or: docker compose -f Portainer/docker-compose-group-databases.yml up -d
+# =============================================================================
+
+include:
+  - ../docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - ../docker-compose-redis.yml
+  - ../docker-compose-qdrant.yml
+  - ../docker-compose-neo4j.yml
+  - ../docker-compose-minio.yml
