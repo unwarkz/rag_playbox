@@ -1,0 +1,19 @@
+# =============================================================================
+# RAG Sandbox - AI/ML Inference Layer Group
+# =============================================================================
+# AI/ML inference layer - embedding, reranking, LLM, document parsing
+#
+# Services: Embedding, Reranker, Ollama, Docling, Tika, Unstructured
+#
+# Usage:
+#   docker compose -f docker-compose-group-ai.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-embedding.yml
+  - docker-compose-reranker.yml
+  - docker-compose-ollama.yml
+  - docker-compose-docling.yml
+  - docker-compose-tika.yml
+  - docker-compose-unstructured.yml

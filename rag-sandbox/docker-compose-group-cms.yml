@@ -1,0 +1,16 @@
+# =============================================================================
+# RAG Sandbox - Content Management Group
+# =============================================================================
+# Headless CMS and no-code database tools
+#
+# Services: NocoDB, Directus, Teable
+#
+# Usage:
+#   docker compose -f docker-compose-group-cms.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-nocodb.yml
+  - docker-compose-directus.yml
+  - docker-compose-teable.yml

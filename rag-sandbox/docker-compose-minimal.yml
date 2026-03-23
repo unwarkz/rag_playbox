@@ -1,0 +1,26 @@
+# =============================================================================
+# RAG Sandbox - Minimal Useful Stack
+# =============================================================================
+# Minimal stack - databases + embedding + LLM + chat UI
+#
+# A lightweight starting point with core storage, vector embedding,
+# local LLM inference, and a chat interface.
+#
+# Services: PostgreSQL, Redis, Qdrant, MinIO, Embedding, Ollama, Open WebUI
+#
+# Usage:
+#   docker compose -f docker-compose-minimal.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  # Core databases
+  - docker-compose-postgres.yml
+  - docker-compose-redis.yml
+  - docker-compose-qdrant.yml
+  - docker-compose-minio.yml
+  # AI/ML
+  - docker-compose-embedding.yml
+  - docker-compose-ollama.yml
+  # Chat UI
+  - docker-compose-openwebui.yml

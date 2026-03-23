@@ -1,0 +1,18 @@
+# =============================================================================
+# RAG Sandbox - User-Facing Platforms Group
+# =============================================================================
+# User-facing platforms and chat interfaces
+#
+# Services: RAGFlow, Dify, Open WebUI, Pipelines, AnythingLLM
+#
+# Usage:
+#   docker compose -f docker-compose-group-ui.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-ragflow.yml
+  - docker-compose-dify.yml
+  - docker-compose-openwebui.yml
+  - docker-compose-pipelines.yml
+  - docker-compose-anythingllm.yml

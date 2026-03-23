@@ -1,0 +1,16 @@
+# =============================================================================
+# RAG Sandbox - RAG and Agent Memory Group
+# =============================================================================
+# RAG and agent memory services
+#
+# Services: LightRAG, Mem0, Hindsight
+#
+# Usage:
+#   docker compose -f docker-compose-group-rag.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-lightrag.yml
+  - docker-compose-mem0.yml
+  - docker-compose-hindsight.yml
