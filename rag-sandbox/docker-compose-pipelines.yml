@@ -1,0 +1,72 @@
+###############################################################################
+#  docker-compose-pipelines.yml — Open WebUI Pipelines (function pipelines)
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-pipelines.yml up -d
+#
+#  Image: ghcr.io/open-webui/pipelines:main
+#  Port (internal): 9099
+#  No external port mapping — access via rag-internal network only.
+#
+#  Pipelines provides pluggable function pipelines for Open WebUI.
+#  It runs as a standalone service that Open WebUI connects to internally.
+#
+#  Consumers: Open WebUI (via rag-internal network).
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  pipelines:
+    image: ${OPENWEBUI_PIPELINES_IMAGE:-ghcr.io/open-webui/pipelines:main}
+    container_name: rag-pipelines
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      PIPELINES_API_KEY: ${OPENWEBUI_PIPELINES_API_KEY:-Ch4ng3me_P1pelines!}
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - pipelines-data:/app/pipelines
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — reached by Open WebUI internally
+    # Pipelines API: http://pipelines:9099
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9099/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${OPENWEBUI_PIPELINES_CPU_LIMIT:-1.0}"
+          memory: ${OPENWEBUI_PIPELINES_MEM_LIMIT:-512m}

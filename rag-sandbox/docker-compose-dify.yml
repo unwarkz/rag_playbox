@@ -1,0 +1,262 @@
+###############################################################################
+#  docker-compose-dify.yml — Dify LLM application platform
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-redis.yml \
+#                   -f docker-compose-qdrant.yml \
+#                   -f docker-compose-minio.yml \
+#                   -f docker-compose-dify.yml up -d
+#
+#  Services:
+#    dify-api      — API server (MODE=api)
+#    dify-worker   — Celery background worker (MODE=worker)
+#    dify-sandbox  — Code execution sandbox
+#    dify-web      — Next.js frontend
+#
+#  No external port mapping — dify-web exposed via rag-frontend + NPM only.
+#
+#  Storage backends:
+#    Metadata    → PostgreSQL (dify database)
+#    Cache       → Redis (db:1), Celery broker (db:2)
+#    Vectors     → Qdrant
+#    Files       → MinIO (S3-compatible)
+#
+#  Consumers: end-users via dify-web, API clients via dify-api.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# -----------------------------------------------------------------------------
+# Shared environment block for dify-api and dify-worker (DRY)
+# -----------------------------------------------------------------------------
+x-dify-shared-env: &dify-shared-env
+  # --- Secret key (min 32 chars) ---
+  SECRET_KEY: ${DIFY_SECRET_KEY:-Ch4ng3me_D1fy_Secret_32chars_min!}
+
+  # --- PostgreSQL connection (dify database) ---
+  DB_HOST: ${DIFY_DB_HOST:-postgres}
+  DB_PORT: ${DIFY_DB_PORT:-5432}
+  DB_USERNAME: ${DIFY_DB_USER:-ragadmin}
+  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+  DB_DATABASE: ${DIFY_DB_NAME:-dify}
+
+  # --- Redis connection (db:1 for cache) ---
+  REDIS_HOST: ${DIFY_REDIS_HOST:-redis}
+  REDIS_PORT: ${DIFY_REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+  REDIS_DB: "${DIFY_REDIS_DB:-1}"
+
+  # --- Celery broker (Redis db:2) ---
+  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/2}
+
+  # --- Vector store (Qdrant) ---
+  VECTOR_STORE: qdrant
+  QDRANT_URL: http://qdrant:${QDRANT_REST_PORT:-6333}
+  QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+
+  # --- S3 / MinIO file storage ---
+  STORAGE_TYPE: ${DIFY_STORAGE_TYPE:-s3}
+  S3_ENDPOINT: ${DIFY_S3_ENDPOINT:-http://minio:9000}
+  S3_BUCKET_NAME: ${DIFY_S3_BUCKET:-dify}
+  S3_ACCESS_KEY: ${DIFY_S3_ACCESS_KEY:-minioadmin}
+  S3_SECRET_KEY: ${DIFY_S3_SECRET_KEY:-Ch4ng3me_Min10!}
+  S3_REGION: ${DIFY_S3_REGION:-us-east-1}
+
+  # --- Code sandbox ---
+  CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
+  CODE_EXECUTION_API_KEY: ${DIFY_SANDBOX_API_KEY:-Ch4ng3me_D1fy_S4ndbox!}
+
+  # --- Mail (placeholder — configure for production) ---
+  MAIL_TYPE: ""
+  SMTP_SERVER: ""
+  SMTP_PORT: "587"
+  SMTP_USERNAME: ""
+  SMTP_PASSWORD: ""
+  MAIL_DEFAULT_SEND_FROM: ""
+
+  TZ: ${TZ:-UTC}
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # dify-api — API server (Flask, MODE=api)
+  # ---------------------------------------------------------------------------
+  dify-api:
+    image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
+    container_name: rag-dify-api
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      <<: *dify-shared-env
+      MODE: api
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — reached by dify-web and dify-worker internally
+    # API: http://dify-api:5001
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:5001/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${DIFY_API_CPU_LIMIT:-1.5}"
+          memory: ${DIFY_API_MEM_LIMIT:-768m}
+
+  # ---------------------------------------------------------------------------
+  # dify-worker — Celery background worker (MODE=worker)
+  # ---------------------------------------------------------------------------
+  dify-worker:
+    image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
+    container_name: rag-dify-worker
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      <<: *dify-shared-env
+      MODE: worker
+
+    networks:
+      - rag-internal
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    # Workers don't expose HTTP — no healthcheck endpoint
+    # Celery worker health can be checked via celery inspect if needed
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${DIFY_WORKER_CPU_LIMIT:-1.0}"
+          memory: ${DIFY_WORKER_MEM_LIMIT:-512m}
+
+  # ---------------------------------------------------------------------------
+  # dify-sandbox — Isolated code execution environment
+  # ---------------------------------------------------------------------------
+  dify-sandbox:
+    image: ${DIFY_SANDBOX_IMAGE:-langgenius/dify-sandbox:0.2.10}
+    container_name: rag-dify-sandbox
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      API_KEY: ${DIFY_SANDBOX_API_KEY:-Ch4ng3me_D1fy_S4ndbox!}
+      GIN_MODE: ${DIFY_SANDBOX_GIN_MODE:-release}
+      TZ: ${TZ:-UTC}
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — reached by dify-api internally
+    # Sandbox API: http://dify-sandbox:8194
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8194/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${DIFY_SANDBOX_CPU_LIMIT:-0.5}"
+          memory: ${DIFY_SANDBOX_MEM_LIMIT:-256m}
+
+  # ---------------------------------------------------------------------------
+  # dify-web — Next.js frontend
+  # ---------------------------------------------------------------------------
+  dify-web:
+    image: ${DIFY_WEB_IMAGE:-langgenius/dify-web:1.13.2}
+    container_name: rag-dify-web
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      CONSOLE_API_URL: ${DIFY_WEB_API_URL:-http://dify-api:5001}
+      APP_API_URL: ${DIFY_WEB_APP_API_URL:-http://dify-api:5001}
+      TZ: ${TZ:-UTC}
+
+    networks:
+      # Internal: reaches dify-api
+      - rag-internal
+      # Frontend: exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # Web UI: http://dify-web:3000
+
+    depends_on:
+      dify-api:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:3000/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${DIFY_WEB_CPU_LIMIT:-0.5}"
+          memory: ${DIFY_WEB_MEM_LIMIT:-256m}
