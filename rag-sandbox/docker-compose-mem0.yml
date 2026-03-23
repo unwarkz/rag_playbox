@@ -41,7 +41,7 @@ x-common: &common
 
 services:
   mem0:
-    image: ${MEM0_IMAGE:-mem0ai/mem0-server:latest}
+    image: ${MEM0_IMAGE:-mem0/mem0-api-server:latest}
     container_name: rag-mem0
 
     <<: *common
