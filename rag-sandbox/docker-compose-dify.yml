@@ -30,10 +30,8 @@
 # YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -64,7 +62,7 @@ x-dify-shared-env: &dify-shared-env
   CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/2}
 
   # --- Vector store (Qdrant) ---
-  VECTOR_STORE: qdrant
+  VECTOR_STORE: ${DIFY_VECTOR_STORE:-qdrant}
   QDRANT_URL: http://qdrant:${QDRANT_REST_PORT:-6333}
   QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
@@ -77,16 +75,16 @@ x-dify-shared-env: &dify-shared-env
   S3_REGION: ${DIFY_S3_REGION:-us-east-1}
 
   # --- Code sandbox ---
-  CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
+  CODE_EXECUTION_ENDPOINT: ${DIFY_CODE_EXECUTION_ENDPOINT:-http://dify-sandbox:8194}
   CODE_EXECUTION_API_KEY: ${DIFY_SANDBOX_API_KEY:-Ch4ng3me_D1fy_S4ndbox!}
 
   # --- Mail (placeholder — configure for production) ---
-  MAIL_TYPE: ""
-  SMTP_SERVER: ""
-  SMTP_PORT: "587"
-  SMTP_USERNAME: ""
-  SMTP_PASSWORD: ""
-  MAIL_DEFAULT_SEND_FROM: ""
+  MAIL_TYPE: ${DIFY_MAIL_TYPE:-smtp}
+  SMTP_SERVER: ${SMTP_HOST:-}
+  SMTP_PORT: "${SMTP_PORT:-587}"
+  SMTP_USERNAME: ${SMTP_USERNAME:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  MAIL_DEFAULT_SEND_FROM: ${SMTP_FROM:-admin@example.com}
 
   TZ: ${TZ:-UTC}
 
@@ -102,8 +100,7 @@ services:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
     container_name: rag-dify-api
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       <<: *dify-shared-env
@@ -149,8 +146,7 @@ services:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
     container_name: rag-dify-worker
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       <<: *dify-shared-env
@@ -185,8 +181,7 @@ services:
     image: ${DIFY_SANDBOX_IMAGE:-langgenius/dify-sandbox:0.2.10}
     container_name: rag-dify-sandbox
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       API_KEY: ${DIFY_SANDBOX_API_KEY:-Ch4ng3me_D1fy_S4ndbox!}
@@ -223,8 +218,7 @@ services:
     image: ${DIFY_WEB_IMAGE:-langgenius/dify-web:1.13.2}
     container_name: rag-dify-web
 
-    <<: *restart
-    <<: *logging
+    <<: *common
 
     environment:
       CONSOLE_API_URL: ${DIFY_WEB_API_URL:-http://dify-api:5001}

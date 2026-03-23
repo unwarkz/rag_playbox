@@ -15,10 +15,8 @@ name: rag-sandbox
 # YAML ANCHORS — reusable fragments for per-service compose files
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
