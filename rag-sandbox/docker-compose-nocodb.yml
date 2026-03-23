@@ -16,13 +16,11 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# YAML ANCHOR — shared restart & logging policy
 # =============================================================================
 
-x-restart: &restart
+x-common: &common
   restart: ${RESTART_POLICY:-unless-stopped}
-
-x-logging: &logging
   logging:
     driver: ${LOG_DRIVER:-json-file}
     options:
@@ -38,12 +36,7 @@ services:
     image: ${NOCODB_IMAGE:-nocodb/nocodb:latest}
     container_name: rag-nocodb
 
-    restart: ${RESTART_POLICY:-unless-stopped}
-    logging:
-      driver: ${LOG_DRIVER:-json-file}
-      options:
-        max-size: ${LOG_MAX_SIZE:-50m}
-        max-file: ${LOG_MAX_FILE:-3}
+    <<: *common
 
     environment:
       # --- PostgreSQL connection (nocodb database) ---
