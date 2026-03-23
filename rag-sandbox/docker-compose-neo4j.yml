@@ -1,0 +1,79 @@
+###############################################################################
+#  docker-compose-neo4j.yml — Neo4j graph database (Community Edition)
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-neo4j.yml up -d
+#
+#  Image: neo4j:2026.02.3-community
+#  Ports (internal only): 7474 (HTTP/Browser), 7687 (Bolt)
+#  Plugins: APOC, Graph Data Science
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: LightRAG (graph store), knowledge graph pipelines.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  neo4j:
+    image: ${NEO4J_IMAGE:-neo4j:2026.02.3-community}
+    container_name: rag-neo4j
+
+    <<: *common
+
+    environment:
+      # Authentication: neo4j/<password>
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/Ch4ng3me_Neo4j!}
+
+      # Auto-install plugins on first start
+      NEO4J_PLUGINS: ${NEO4J_PLUGINS:-["apoc","graph-data-science"]}
+
+      # JVM heap settings (must fit within NEO4J_MEM_LIMIT)
+      NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL:-256m}
+      NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX:-512m}
+      NEO4J_server_memory_pagecache_size: ${NEO4J_PAGECACHE:-256m}
+
+      # Allow APOC procedures to run unrestricted
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*,gds.*"
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*,gds.*"
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Neo4j via rag-internal
+    # HTTP:  http://neo4j:7474   Bolt: bolt://neo4j:7687
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --spider http://localhost:7474 || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+    cpus: ${NEO4J_CPU_LIMIT:-1.0}
+    mem_limit: ${NEO4J_MEM_LIMIT:-1024m}

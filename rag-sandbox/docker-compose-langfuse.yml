@@ -1,0 +1,98 @@
+###############################################################################
+#  docker-compose-langfuse.yml — Langfuse LLM observability & tracing
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-langfuse.yml up -d
+#
+#  Image: langfuse/langfuse:3
+#  No external port mapping — access via rag-frontend + NPM only.
+#  Storage backends:
+#    Metadata → PostgreSQL (langfuse database)
+#
+#  Consumers: LiteLLM (tracing callback), developers (WebUI for trace analysis)
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  langfuse:
+    image: ${LANGFUSE_IMAGE:-langfuse/langfuse:3}
+    container_name: rag-langfuse
+
+    <<: *common
+
+    environment:
+      # --- PostgreSQL connection (langfuse database) ---
+      DATABASE_URL: ${LANGFUSE_DATABASE_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/langfuse}
+
+      # --- NextAuth configuration ---
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-Ch4ng3me_Langfuse_NextAuth!}
+      NEXTAUTH_URL: ${LANGFUSE_NEXTAUTH_URL:-http://localhost:3000}
+      SALT: ${LANGFUSE_SALT:-Ch4ng3me_Langfuse_Salt_Random!}
+
+      # --- Telemetry ---
+      TELEMETRY_ENABLED: ${LANGFUSE_TELEMETRY_ENABLED:-false}
+
+      # --- Experimental features ---
+      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "${LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES:-true}"
+
+      # --- Initial org / project bootstrap ---
+      LANGFUSE_INIT_ORG_ID: ${LANGFUSE_INIT_ORG_ID:-rag-sandbox}
+      LANGFUSE_INIT_ORG_NAME: ${LANGFUSE_INIT_ORG_NAME:-RAG Sandbox}
+      LANGFUSE_INIT_PROJECT_ID: ${LANGFUSE_INIT_PROJECT_ID:-default}
+      LANGFUSE_INIT_PROJECT_NAME: ${LANGFUSE_INIT_PROJECT_NAME:-Default Project}
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_INIT_PROJECT_PUBLIC_KEY:-pk-lf-change-me}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_INIT_PROJECT_SECRET_KEY:-sk-lf-change-me}
+
+      # --- Initial admin user ---
+      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL:-admin@example.com}
+      LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD:-Ch4ng3me_Langfuse_Admin!}
+      LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-Admin}
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - langfuse-data:/app/data
+
+    networks:
+      # Internal: reaches postgres
+      - rag-internal
+      # Frontend: WebUI exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI: http://langfuse:3000
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:3000/api/public/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${LANGFUSE_CPU_LIMIT:-1.0}
+    mem_limit: ${LANGFUSE_MEM_LIMIT:-512m}

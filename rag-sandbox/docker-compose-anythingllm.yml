@@ -1,0 +1,106 @@
+###############################################################################
+#  docker-compose-anythingllm.yml — AnythingLLM document workspace
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-qdrant.yml \
+#                   -f docker-compose-ollama.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-anythingllm.yml up -d
+#
+#  Image: mintplexlabs/anythingllm:latest
+#  Port (internal): 3001 (Server port)
+#  No external port mapping — access via rag-frontend network + NPM only.
+#
+#  Backends:
+#    LLM         → Ollama (local)
+#    Embeddings  → Infinity (generic-openai engine)
+#    Vectors     → Qdrant
+#    Storage     → Local volume
+#
+#  Consumers: end-users via the built-in WebUI.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  anythingllm:
+    image: ${ANYTHINGLLM_IMAGE:-mintplexlabs/anythingllm:latest}
+    container_name: rag-anythingllm
+
+    <<: *common
+
+    environment:
+      # --- Authentication ---
+      JWT_SECRET: ${ANYTHINGLLM_JWT_SECRET:-Ch4ng3me_4nyth1ng_JWT!}
+      AUTH_TOKEN: ${ANYTHINGLLM_AUTH_TOKEN:-}
+
+      # --- LLM provider (Ollama) ---
+      LLM_PROVIDER: ${ANYTHINGLLM_LLM_PROVIDER:-ollama}
+      OLLAMA_BASE_PATH: ${ANYTHINGLLM_OLLAMA_BASE_PATH:-http://ollama:11434}
+      OLLAMA_MODEL_PREF: ${ANYTHINGLLM_OLLAMA_MODEL_PREF:-qwen3:14b}
+
+      # --- Embedding engine (Infinity via generic-openai) ---
+      EMBEDDING_ENGINE: ${ANYTHINGLLM_EMBEDDING_ENGINE:-generic-openai}
+      EMBEDDING_BASE_PATH: ${ANYTHINGLLM_EMBEDDING_BASE_PATH:-http://embedding:7997}
+      EMBEDDING_MODEL_PREF: ${ANYTHINGLLM_EMBEDDING_MODEL_PREF:-Qwen/Qwen3-Embedding-0.6B}
+
+      # --- Vector database (Qdrant) ---
+      VECTOR_DB: ${ANYTHINGLLM_VECTOR_DB:-qdrant}
+      QDRANT_ENDPOINT: ${ANYTHINGLLM_QDRANT_ENDPOINT:-http://qdrant:6333}
+      QDRANT_API_KEY: ${ANYTHINGLLM_QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+
+      # --- Storage ---
+      STORAGE_DIR: /app/server/storage
+
+      # --- Server ---
+      SERVER_PORT: "${ANYTHINGLLM_SERVER_PORT:-3001}"
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - anythingllm-data:/app/server/storage
+
+    networks:
+      # Internal: reaches qdrant, ollama, embedding
+      - rag-internal
+      # Frontend: WebUI exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI + API: http://anythingllm:3001
+
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:3001/api/ping || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${ANYTHINGLLM_CPU_LIMIT:-1.0}
+    mem_limit: ${ANYTHINGLLM_MEM_LIMIT:-512m}

@@ -1,0 +1,74 @@
+###############################################################################
+#  docker-compose-redis.yml — Valkey (Redis-compatible) cache & message broker
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-redis.yml up -d
+#
+#  Image: valkey/valkey:9.0.3-alpine
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: Dify, RAGFlow, Directus, LiteLLM, and other services
+#  needing a cache or pub/sub broker.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  redis:
+    image: ${REDIS_IMAGE:-valkey/valkey:9.0.3-alpine}
+    container_name: rag-redis
+
+    <<: *common
+
+    # -------------------------------------------------------------------------
+    # Valkey server flags:
+    #   --requirepass   — require authentication for all clients
+    #   --save          — RDB snapshot every 60 s if ≥ 1 key changed
+    #   --maxmemory     — hard memory cap (must fit within REDIS_MEM_LIMIT)
+    #   --maxmemory-policy — eviction strategy when maxmemory is reached
+    # -------------------------------------------------------------------------
+    command: >-
+      valkey-server
+        --requirepass ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+        --save 60 1
+        --maxmemory ${REDIS_MAXMEMORY:-180mb}
+        --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
+
+    volumes:
+      - redis-data:/data
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Redis via rag-internal
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "valkey-cli",
+          "-a",
+          "${REDIS_PASSWORD:-Ch4ng3me_R3dis!}",
+          "ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    cpus: ${REDIS_CPU_LIMIT:-0.5}
+    mem_limit: ${REDIS_MEM_LIMIT:-256m}

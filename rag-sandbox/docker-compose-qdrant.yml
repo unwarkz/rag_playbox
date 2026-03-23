@@ -1,0 +1,65 @@
+###############################################################################
+#  docker-compose-qdrant.yml — Qdrant vector database
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-qdrant.yml up -d
+#
+#  Image: qdrant/qdrant:v1.16.3
+#  Ports (internal only): 6333 (REST), 6334 (gRPC)
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: LightRAG, Mem0, AnythingLLM, Hindsight, and embedding pipelines.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  qdrant:
+    image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.16.3}
+    container_name: rag-qdrant
+
+    <<: *common
+
+    environment:
+      # API key protects both REST and gRPC endpoints
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+      # Disable the built-in web dashboard (not needed behind NPM)
+      QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "${QDRANT_STATIC_CONTENT:-false}"
+      QDRANT__LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Qdrant via rag-internal
+    # REST: http://qdrant:6333   gRPC: qdrant:6334
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:6333/healthz || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    cpus: ${QDRANT_CPU_LIMIT:-1.0}
+    mem_limit: ${QDRANT_MEM_LIMIT:-1024m}

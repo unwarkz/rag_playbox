@@ -1,0 +1,64 @@
+###############################################################################
+#  docker-compose-unstructured.yml — Unstructured.io document processing API
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-unstructured.yml up -d
+#
+#  Image: downloads.unstructured.io/unstructured-io/unstructured:latest
+#  Port (internal only): 8000
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: Dify, LightRAG, AnythingLLM, and any pipeline needing
+#  advanced document partitioning with element-type classification
+#  (titles, narratives, tables, images, etc.).
+#
+#  Unstructured provides a REST API that accepts documents and returns
+#  structured JSON elements suitable for downstream RAG chunking.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  unstructured:
+    image: ${UNSTRUCTURED_IMAGE:-downloads.unstructured.io/unstructured-io/unstructured:latest}
+    container_name: rag-unstructured
+
+    <<: *common
+
+    environment:
+      # API key for request authentication (optional but recommended)
+      UNSTRUCTURED_API_KEY: ${UNSTRUCTURED_API_KEY:-}
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Unstructured via rag-internal
+    # API: http://unstructured:8000
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8000/healthcheck || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    cpus: ${UNSTRUCTURED_CPU_LIMIT:-2.0}
+    mem_limit: ${UNSTRUCTURED_MEM_LIMIT:-1024m}

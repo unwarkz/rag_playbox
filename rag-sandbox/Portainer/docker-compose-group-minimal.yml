@@ -1,0 +1,22 @@
+# =============================================================================
+# RAG Sandbox — Minimal RAG Stack (Portainer)
+# =============================================================================
+# Bare minimum for a working RAG platform.
+#
+# Services: PostgreSQL (Portainer), Redis, MinIO, Embedding, RAGFlow
+#
+# Uses the Portainer-specific postgres (no build context) and reuses all
+# other per-service compose files from the parent directory.
+#
+# Usage:
+#   Portainer → Stacks → Add stack → Repository → point to this file
+#   Or: docker compose -f Portainer/docker-compose-group-minimal.yml up -d
+# =============================================================================
+
+include:
+  - ../docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - ../docker-compose-redis.yml
+  - ../docker-compose-minio.yml
+  - ../docker-compose-embedding.yml
+  - ../docker-compose-ragflow.yml

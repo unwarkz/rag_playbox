@@ -1,0 +1,114 @@
+###############################################################################
+#  docker-compose-mem0.yml — Mem0 semantic memory layer
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-qdrant.yml \
+#                   -f docker-compose-neo4j.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-mem0.yml up -d
+#
+#  Image: mem0ai/mem0-server:latest
+#  Port (internal only): 8888
+#  No external port mapping — access via rag-internal network only.
+#
+#  Backends:
+#    Vector store  → Qdrant
+#    History/state → PostgreSQL (mem0 database)
+#    Graph memory  → Neo4j (optional, enabled)
+#    LLM           → Ollama (OpenAI-compatible proxy)
+#    Embeddings    → Infinity embedding server
+#
+#  Consumers: application services that need long-term user/agent memory.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  mem0:
+    image: ${MEM0_IMAGE:-mem0/mem0-api-server:latest}
+    container_name: rag-mem0
+
+    <<: *common
+
+    environment:
+      # --- LLM configuration (Ollama via OpenAI-compatible API) ---
+      OPENAI_API_KEY: ${MEM0_API_KEY:-Ch4ng3me_M3m0!}
+      OPENAI_API_BASE: ${MEM0_LLM_BASE_URL:-http://ollama:11434}/v1
+      LLM_PROVIDER: ${MEM0_LLM_PROVIDER:-ollama}
+      LLM_MODEL: ${MEM0_LLM_MODEL:-qwen3:14b}
+      LLM_BASE_URL: ${MEM0_LLM_BASE_URL:-http://ollama:11434}
+
+      # --- Embedding configuration (via Infinity) ---
+      EMBEDDING_PROVIDER: ${MEM0_EMBEDDING_PROVIDER:-openai}
+      EMBEDDING_MODEL: ${MEM0_EMBEDDING_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      EMBEDDING_BASE_URL: ${MEM0_EMBEDDING_BASE_URL:-http://embedding:7997/v1}
+
+      # --- Vector store (Qdrant) ---
+      VECTOR_STORE: ${MEM0_VECTOR_STORE:-qdrant}
+      QDRANT_HOST: ${MEM0_QDRANT_HOST:-qdrant}
+      QDRANT_PORT: ${MEM0_QDRANT_PORT:-6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+
+      # --- PostgreSQL (mem0 database — history & state) ---
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_MEM0:-mem0}
+
+      # --- Neo4j (graph memory — relationship tracking) ---
+      NEO4J_URI: bolt://neo4j:${NEO4J_BOLT_PORT:-7687}
+      NEO4J_USERNAME: ${NEO4J_USER:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-Ch4ng3me_Neo4j!}
+      GRAPH_MEMORY_ENABLED: "${MEM0_GRAPH_MEMORY_ENABLED:-true}"
+
+      # --- Server settings ---
+      PORT: ${MEM0_PORT:-8888}
+      API_KEY: ${MEM0_API_KEY:-Ch4ng3me_M3m0!}
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - mem0-data:/mem0/data
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Mem0 via rag-internal
+    # API: http://mem0:8888
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:${MEM0_PORT:-8888}/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${MEM0_CPU_LIMIT:-1.0}
+    mem_limit: ${MEM0_MEM_LIMIT:-512m}

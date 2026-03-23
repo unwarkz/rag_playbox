@@ -1,0 +1,68 @@
+###############################################################################
+#  docker-compose-docling.yml — Docling document parsing service
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-docling.yml up -d
+#
+#  Image: quay.io/ds4sd/docling-serve:latest
+#  Port (internal only): 5001
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: RAGFlow, Dify, and any ingestion pipeline that needs to
+#  convert PDFs, DOCX, PPTX, and other document formats into structured
+#  text with layout-aware chunking.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  docling:
+    image: ${DOCLING_IMAGE:-quay.io/ds4sd/docling-serve:latest}
+    container_name: rag-docling
+
+    <<: *common
+
+    environment:
+      # Log verbosity for the Docling server
+      DOCLING_SERVE_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Number of synchronous worker threads for document conversion
+      DOCLING_SERVE_MAX_SYNC_WORKERS: "${DOCLING_WORKERS:-2}"
+      # Force CPU-only inference for OCR and layout models
+      TORCH_DEVICE: ${DOCLING_DEVICE:-cpu}
+
+    volumes:
+      - docling-cache:/tmp/docling
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Docling via rag-internal
+    # API: http://docling:5001
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:5001/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    cpus: ${DOCLING_CPU_LIMIT:-2.0}
+    mem_limit: ${DOCLING_MEM_LIMIT:-1024m}

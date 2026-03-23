@@ -1,0 +1,121 @@
+###############################################################################
+#  docker-compose-openwebui.yml — Open WebUI chat interface
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-qdrant.yml \
+#                   -f docker-compose-ollama.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-openwebui.yml up -d
+#
+#  Image: ghcr.io/open-webui/open-webui:main
+#  Port (internal): 8080 (default Open WebUI port)
+#  No external port mapping — access via rag-frontend network + NPM only.
+#
+#  Storage backends:
+#    Metadata    → PostgreSQL (openwebui database)
+#    Vectors     → Qdrant
+#    Embeddings  → Infinity (OpenAI-compatible endpoint)
+#    LLM         → Ollama (local) + optional external APIs
+#
+#  Consumers: end-users via the WebUI.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  openwebui:
+    image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:main}
+    container_name: rag-openwebui
+
+    <<: *common
+
+    environment:
+      # --- Ollama backend ---
+      OLLAMA_BASE_URL: ${OPENWEBUI_OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_API_KEY: ${OLLAMA_API_TOKEN:-}
+
+      # --- OpenAI-compatible endpoints (e.g. LiteLLM, external providers) ---
+      OPENAI_API_BASE_URLS: ${OPENWEBUI_OPENAI_API_BASE_URLS:-}
+      OPENAI_API_KEYS: ${OPENWEBUI_OPENAI_API_KEYS:-}
+
+      # --- Vector database (Qdrant) ---
+      VECTOR_DB: ${OPENWEBUI_VECTOR_DB:-qdrant}
+      QDRANT_URI: http://qdrant:${QDRANT_REST_PORT:-6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+
+      # --- RAG embedding engine (Infinity via OpenAI-compatible API) ---
+      RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
+      RAG_OPENAI_API_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
+      RAG_OPENAI_API_KEY: ${OPENWEBUI_RAG_OPENAI_API_KEY:-none}
+      RAG_EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+
+      # --- RAG reranking model ---
+      RAG_RERANKING_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+
+      # --- PostgreSQL connection (openwebui database) ---
+      DATABASE_URL: ${OPENWEBUI_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/openwebui}
+
+      # --- Authentication & security ---
+      WEBUI_SECRET_KEY: ${OPENWEBUI_SECRET_KEY:-Ch4ng3me_0penWebUI!}
+      WEBUI_AUTH: ${OPENWEBUI_WEBUI_AUTH:-true}
+      ENABLE_SIGNUP: ${OPENWEBUI_ENABLE_SIGNUP:-true}
+
+      # --- SMTP settings (placeholder — configure for production) ---
+      SMTP_SERVER: ${SMTP_HOST:-}
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - openwebui-data:/app/backend/data
+
+    networks:
+      # Internal: reaches postgres, qdrant, ollama, embedding
+      - rag-internal
+      # Frontend: WebUI exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # WebUI: http://openwebui:8080
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8080/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${OPENWEBUI_CPU_LIMIT:-1.0}
+    mem_limit: ${OPENWEBUI_MEM_LIMIT:-512m}

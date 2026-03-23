@@ -1,0 +1,116 @@
+###############################################################################
+#  docker-compose-ragflow.yml — RAGFlow document-centric RAG platform
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-postgres.yml \
+#                   -f docker-compose-redis.yml \
+#                   -f docker-compose-minio.yml \
+#                   -f docker-compose-embedding.yml \
+#                   -f docker-compose-ragflow.yml up -d
+#
+#  Image: infiniflow/ragflow:v0.24.0
+#  Port (internal): 9380 (HTTP API + WebUI)
+#  No external port mapping — access via rag-frontend network + NPM only.
+#
+#  Storage backends:
+#    Metadata    → PostgreSQL (ragflow database)
+#    Cache       → Redis (db:0)
+#    Documents   → MinIO (S3-compatible)
+#    Embeddings  → Infinity (TEI endpoint)
+#
+#  Consumers: end-users via the built-in WebUI, API clients.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  ragflow:
+    image: ${RAGFLOW_IMAGE:-infiniflow/ragflow:v0.24.0}
+    container_name: rag-ragflow
+
+    <<: *common
+
+    environment:
+      # --- Document engine ---
+      DOC_ENGINE: ${RAGFLOW_DOC_ENGINE:-infinity}
+
+      # --- Database type ---
+      DB_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
+
+      # --- PostgreSQL connection (ragflow database) ---
+      PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
+      PG_PORT: ${RAGFLOW_DB_PORT:-5432}
+      PG_USER: ${RAGFLOW_DB_USER:-ragadmin}
+      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+      PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
+
+      # --- Redis connection (db:0 — dedicated to RAGFlow) ---
+      REDIS_HOST: ${RAGFLOW_REDIS_HOST:-redis}
+      REDIS_PORT: ${RAGFLOW_REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+      REDIS_DB: "${RAGFLOW_REDIS_DB:-0}"
+
+      # --- MinIO / S3 object storage ---
+      MINIO_HOST: ${RAGFLOW_MINIO_HOST:-minio}
+      MINIO_PORT: ${RAGFLOW_MINIO_PORT:-9000}
+      MINIO_USER: ${RAGFLOW_MINIO_USER:-minioadmin}
+      MINIO_PASSWORD: ${RAGFLOW_MINIO_PASSWORD:-Ch4ng3me_Min10!}
+
+      # --- Embedding service (Infinity TEI endpoint) ---
+      TEI_ENDPOINT: http://embedding:${EMBED_PORT:-7997}
+
+      # --- Server settings ---
+      SVR_HTTP_PORT: "${RAGFLOW_HTTP_PORT:-9380}"
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      # Single volume mounted at /ragflow — covers both logs/ and data/ subdirs
+      - ragflow-data:/ragflow
+
+    networks:
+      # Internal: reaches postgres, redis, minio, embedding
+      - rag-internal
+      # Frontend: WebUI exposed via Nginx Proxy Manager
+      - rag-frontend
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # HTTP API + WebUI: http://ragflow:9380
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9380/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    cpus: ${RAGFLOW_CPU_LIMIT:-2.0}
+    mem_limit: ${RAGFLOW_MEM_LIMIT:-1536m}

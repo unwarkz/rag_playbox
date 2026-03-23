@@ -1,0 +1,82 @@
+###############################################################################
+#  docker-compose-embedding.yml — Infinity embedding server
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-embedding.yml up -d
+#
+#  Image: michaelf34/infinity:latest
+#  Model: Qwen/Qwen3-Embedding-0.6B (configurable via EMBED_MODEL)
+#  Port (internal only): 7997
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: LightRAG, Mem0, AnythingLLM, Open WebUI, Dify, and any
+#  service requiring dense vector embeddings.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  embedding:
+    image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
+    container_name: rag-embedding
+
+    <<: *common
+
+    # -------------------------------------------------------------------------
+    # Infinity v2 flags:
+    #   --model-name-or-path  — HF model ID or local path inside /models
+    #   --served-model-name   — alias exposed in the OpenAI-compatible API
+    #   --port                — HTTP listen port (internal only)
+    #   --device cpu          — no GPU; uses CPU inference
+    #   --batch-size 32       — max batch size for concurrent requests
+    # -------------------------------------------------------------------------
+    command: >-
+      v2
+        --model-name-or-path ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+        --served-model-name ${EMBED_SERVED_NAME:-embed}
+        --port 7997
+        --device cpu
+        --batch-size 32
+
+    environment:
+      # HuggingFace mirror endpoint (optional; useful behind a firewall)
+      HF_ENDPOINT: ${HF_ENDPOINT:-}
+      # Cache directory for downloaded models
+      HF_HUB_CACHE: /models
+
+    volumes:
+      - models-cache:/models
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach embedding via rag-internal
+    # OpenAI-compatible API: http://embedding:7997/v1
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:7997/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 120s
+
+    cpus: ${EMBEDDING_CPU_LIMIT:-2.0}
+    mem_limit: ${EMBEDDING_MEM_LIMIT:-1024m}

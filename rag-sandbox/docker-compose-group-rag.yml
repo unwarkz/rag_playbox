@@ -1,0 +1,21 @@
+# =============================================================================
+# RAG Sandbox - RAG and Agent Memory Group
+# =============================================================================
+# RAG and agent memory services with required backing services.
+#
+# Services: PostgreSQL, Redis, Qdrant, Neo4j, Embedding, LightRAG, Mem0, Hindsight
+#
+# Usage:
+#   docker compose -f docker-compose-group-rag.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - docker-compose-redis.yml
+  - docker-compose-qdrant.yml
+  - docker-compose-neo4j.yml
+  - docker-compose-embedding.yml
+  - docker-compose-lightrag.yml
+  - docker-compose-mem0.yml
+  - docker-compose-hindsight.yml

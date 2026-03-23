@@ -1,0 +1,19 @@
+# =============================================================================
+# RAG Sandbox - Content Management Group
+# =============================================================================
+# Headless CMS and no-code database tools with required backing services.
+#
+# Services: PostgreSQL, Redis, MinIO, NocoDB, Directus, Teable
+#
+# Usage:
+#   docker compose -f docker-compose-group-cms.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - docker-compose-redis.yml
+  - docker-compose-minio.yml
+  - docker-compose-nocodb.yml
+  - docker-compose-directus.yml
+  - docker-compose-teable.yml

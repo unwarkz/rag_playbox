@@ -1,0 +1,18 @@
+# =============================================================================
+# RAG Sandbox - Infrastructure Group
+# =============================================================================
+# Infrastructure - reverse proxy, LLM gateway, observability, MCP
+#
+# Services: Nginx Proxy Manager, LiteLLM, Langfuse, DBHub
+#
+# Usage:
+#   docker compose -f docker-compose-group-infra.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-npm.yml
+  - docker-compose-litellm.yml
+  - docker-compose-postgres.yml
+  - docker-compose-langfuse.yml
+  - docker-compose-dbhub.yml

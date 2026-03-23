@@ -1,0 +1,124 @@
+###############################################################################
+#  docker-compose-npm.yml — Nginx Proxy Manager + MariaDB backend
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-npm.yml up -d
+#
+#  Services:
+#    npm-db                — MariaDB (Aria) for NPM metadata
+#    nginx-proxy-manager   — Reverse proxy + SSL termination + admin UI
+#
+#  ⚠ EXTERNAL PORTS — NPM is the ONLY service that publishes host ports:
+#    - ${NPM_HTTP_PORT:-80}:80     — HTTP traffic
+#    - ${NPM_HTTPS_PORT:-443}:443  — HTTPS traffic
+#    - ${NPM_ADMIN_PORT:-8020}:81  — Admin WebUI
+#
+#  All other services are exposed through NPM proxy hosts.
+#  First-login credentials: admin@example.com / changeme (change immediately!)
+###############################################################################
+
+# =============================================================================
+# YAML ANCHOR — shared restart & logging policy
+# =============================================================================
+
+x-common: &common
+  restart: ${RESTART_POLICY:-unless-stopped}
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # npm-db — MariaDB (Aria) for Nginx Proxy Manager metadata
+  # ---------------------------------------------------------------------------
+  npm-db:
+    image: ${NPM_DB_IMAGE:-jc21/mariadb-aria:latest}
+    container_name: rag-npm-db
+
+    <<: *common
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NPM_DB_MYSQL_ROOT_PASSWORD:-Ch4ng3me_NPM_Root!}
+      MYSQL_DATABASE: ${NPM_DB_MYSQL_DATABASE:-npm}
+      MYSQL_USER: ${NPM_DB_MYSQL_USER:-npm}
+      MYSQL_PASSWORD: ${NPM_DB_MYSQL_PASSWORD:-Ch4ng3me_NPM_Mysql!}
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - npm-mysql:/var/lib/mysql
+
+    networks:
+      - rag-frontend
+
+    # No external port mapping — reached by nginx-proxy-manager internally
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${NPM_DB_CPU_LIMIT:-0.5}
+    mem_limit: ${NPM_DB_MEM_LIMIT:-256m}
+
+  # ---------------------------------------------------------------------------
+  # nginx-proxy-manager — Reverse proxy, SSL termination, admin UI
+  # This is the ONLY service that publishes external (host) ports.
+  # ---------------------------------------------------------------------------
+  nginx-proxy-manager:
+    image: ${NPM_IMAGE:-jc21/nginx-proxy-manager:latest}
+    container_name: rag-npm
+
+    <<: *common
+
+    environment:
+      # --- MariaDB connection ---
+      DB_MYSQL_HOST: npm-db
+      DB_MYSQL_PORT: "3306"
+      DB_MYSQL_USER: ${NPM_DB_MYSQL_USER:-npm}
+      DB_MYSQL_PASSWORD: ${NPM_DB_MYSQL_PASSWORD:-Ch4ng3me_NPM_Mysql!}
+      DB_MYSQL_NAME: ${NPM_DB_MYSQL_DATABASE:-npm}
+      TZ: ${TZ:-UTC}
+
+    # ⚠ EXTERNAL PORTS — Only service with host-mapped ports
+    ports:
+      - "${NPM_HTTP_PORT:-80}:80"       # HTTP traffic
+      - "${NPM_HTTPS_PORT:-443}:443"    # HTTPS traffic
+      - "${NPM_ADMIN_PORT:-8020}:81"    # Admin WebUI
+
+    volumes:
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+
+    networks:
+      - rag-frontend
+
+    depends_on:
+      npm-db:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:81/api/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${NPM_CPU_LIMIT:-0.5}
+    mem_limit: ${NPM_MEM_LIMIT:-256m}
