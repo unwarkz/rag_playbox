@@ -1,0 +1,115 @@
+###############################################################################
+#  docker-compose-common.yml — Shared anchors, networks & volumes
+#
+#  This file is included by every per-service compose file via:
+#    include:
+#      - docker-compose-common.yml
+#
+#  It defines YAML anchors (x-*), the two project networks, and all named
+#  volumes for the RAG Sandbox stack.
+###############################################################################
+
+name: rag-sandbox
+
+# =============================================================================
+# YAML ANCHORS — reusable fragments for per-service compose files
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+x-default-resources: &default-resources
+  deploy:
+    resources:
+      limits:
+        cpus: ${DEFAULT_CPU_LIMIT:-1.0}
+        memory: ${DEFAULT_MEM_LIMIT:-512m}
+
+x-depends-db: &depends-db
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+x-depends-full: &depends-full
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    qdrant:
+      condition: service_healthy
+    minio:
+      condition: service_healthy
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+
+networks:
+  rag-internal:
+    driver: bridge
+    # All containers (databases, services, everything)
+
+  rag-frontend:
+    driver: bridge
+    # UI containers + Nginx Proxy Manager only
+
+# =============================================================================
+# VOLUMES — every named volume used across the stack
+# =============================================================================
+
+volumes:
+  # --- Data layer ---
+  pg-data:
+  redis-data:
+  qdrant-data:
+  neo4j-data:
+  neo4j-logs:
+  neo4j-plugins:
+  minio-data:
+
+  # --- AI / ML layer ---
+  models-cache:
+  ollama-data:
+
+  # --- RAG engines ---
+  lightrag-data:
+  mem0-data:
+  hindsight-data:
+  docling-cache:
+
+  # --- Platforms / UIs ---
+  ragflow-data:
+  dify-storage:
+  openwebui-data:
+  pipelines-data:
+  anythingllm-data:
+
+  # --- Data management ---
+  nocodb-data:
+  directus-uploads:
+  teable-data:
+
+  # --- Proxy ---
+  npm-data:
+  npm-letsencrypt:
+  npm-mysql:
+
+  # --- Observability ---
+  litellm-data:
+  langfuse-data:
+
+# =============================================================================
+# SERVICES — defined in per-service compose files, not here
+# =============================================================================
+
+services: {}
