@@ -1,0 +1,83 @@
+###############################################################################
+#  docker-compose-ollama.yml — Ollama local LLM inference (CPU-only)
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-ollama.yml up -d
+#
+#  Image: ollama/ollama:latest
+#  Port (internal only): 11434
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: LightRAG, Mem0, AnythingLLM, Open WebUI, Dify — any
+#  service that calls the Ollama API for chat / completion / embeddings.
+#
+#  CPU-only configuration — no GPU/runtime section. Tune OLLAMA_NUM_PARALLEL
+#  and OLLAMA_MAX_LOADED_MODELS to fit within the memory budget.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    container_name: rag-ollama
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      # Bind to all interfaces inside the container
+      OLLAMA_HOST: "0.0.0.0"
+      # Allow cross-origin requests from any internal service
+      OLLAMA_ORIGINS: "*"
+      # Optional bearer-token authentication for the Ollama API
+      OLLAMA_API_TOKEN: ${OLLAMA_API_TOKEN:-}
+      # Concurrent request slots per loaded model
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-2}
+      # Maximum number of models kept in memory simultaneously
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-2}
+      # How long an idle model stays loaded before eviction
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      TZ: ${TZ:-UTC}
+
+    volumes:
+      - ollama-data:/root/.ollama
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Ollama via rag-internal
+    # API: http://ollama:11434
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:11434/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${OLLAMA_CPU_LIMIT:-4.0}"
+          memory: ${OLLAMA_MEM_LIMIT:-3072m}

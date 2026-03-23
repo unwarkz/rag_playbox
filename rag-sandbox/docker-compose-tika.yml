@@ -1,0 +1,70 @@
+###############################################################################
+#  docker-compose-tika.yml — Apache Tika document extraction server
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-tika.yml up -d
+#
+#  Image: apache/tika:latest-full
+#  Port (internal only): 9998
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: RAGFlow, Dify, AnythingLLM, and any ingestion pipeline
+#  that needs robust text extraction from PDFs, Office docs, HTML,
+#  email, images (via OCR), and 1000+ other formats.
+#
+#  The "latest-full" tag includes all optional parsers, OCR (Tesseract),
+#  and the ONNX-based ML models for language detection.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  tika:
+    image: ${TIKA_IMAGE:-apache/tika:latest-full}
+    container_name: rag-tika
+
+    <<: *restart
+    <<: *logging
+
+    environment:
+      # JVM heap tuning — must fit within TIKA_MEM_LIMIT
+      JAVA_OPTS: ${TIKA_JAVA_OPTS:--Xms128m -Xmx320m}
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach Tika via rag-internal
+    # API: http://tika:9998
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9998/ || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${TIKA_CPU_LIMIT:-1.0}"
+          memory: ${TIKA_MEM_LIMIT:-512m}

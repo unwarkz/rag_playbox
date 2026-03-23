@@ -1,0 +1,89 @@
+###############################################################################
+#  docker-compose-reranker.yml — Infinity reranker server
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-reranker.yml up -d
+#
+#  Image: michaelf34/infinity:latest  (same image as embedding)
+#  Model: BAAI/bge-reranker-v2-m3 (configurable via RERANK_MODEL)
+#  Port (internal only): 7998
+#  No external port mapping — access via rag-internal network only.
+#  Consumers: RAGFlow, Dify, and any retrieval pipeline that applies
+#  cross-encoder reranking after initial vector recall.
+#
+#  Note: shares the models-cache volume with embedding so downloaded
+#  model files are not duplicated on disk.
+###############################################################################
+
+# =============================================================================
+# YAML ANCHORS — mirrors docker-compose-common.yml for merge-key usage
+# =============================================================================
+
+x-restart: &restart
+  restart: ${RESTART_POLICY:-unless-stopped}
+
+x-logging: &logging
+  logging:
+    driver: ${LOG_DRIVER:-json-file}
+    options:
+      max-size: ${LOG_MAX_SIZE:-50m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  reranker:
+    image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
+    container_name: rag-reranker
+
+    <<: *restart
+    <<: *logging
+
+    # -------------------------------------------------------------------------
+    # Infinity v2 flags:
+    #   --model-name-or-path  — HF reranker model ID
+    #   --served-model-name   — alias exposed in the OpenAI-compatible API
+    #   --port                — HTTP listen port (internal only)
+    #   --device cpu          — no GPU; uses CPU inference
+    #   --batch-size 16       — smaller than embedding; reranking is heavier
+    # -------------------------------------------------------------------------
+    command: >-
+      v2
+        --model-name-or-path ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+        --served-model-name ${RERANK_SERVED_NAME:-rerank}
+        --port 7998
+        --device cpu
+        --batch-size 16
+
+    environment:
+      HF_ENDPOINT: ${HF_ENDPOINT:-}
+      HF_HUB_CACHE: /models
+
+    volumes:
+      - models-cache:/models
+
+    networks:
+      - rag-internal
+
+    # No external port mapping — services reach reranker via rag-internal
+    # OpenAI-compatible API: http://reranker:7998/v1
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:7998/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 120s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "${RERANKER_CPU_LIMIT:-1.0}"
+          memory: ${RERANKER_MEM_LIMIT:-768m}
