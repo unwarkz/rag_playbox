@@ -23,18 +23,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -43,7 +31,12 @@ services:
     image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:main}
     container_name: rag-openwebui
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       # --- Ollama backend ---

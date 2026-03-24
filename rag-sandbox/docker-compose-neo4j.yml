@@ -13,18 +13,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -33,7 +21,12 @@ services:
     image: ${NEO4J_IMAGE:-neo4j:2026.02.3-community}
     container_name: rag-neo4j
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       # Authentication: neo4j/<password>

@@ -15,18 +15,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -35,7 +23,12 @@ services:
     image: ${LANGFUSE_IMAGE:-langfuse/langfuse:3}
     container_name: rag-langfuse
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       # --- PostgreSQL connection (langfuse database) ---

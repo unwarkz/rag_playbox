@@ -12,18 +12,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -32,7 +20,12 @@ services:
     image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.16.3}
     container_name: rag-qdrant
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       # API key protects both REST and gRPC endpoints

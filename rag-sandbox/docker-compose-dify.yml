@@ -26,18 +26,6 @@
 #  Consumers: end-users via dify-web, API clients via dify-api.
 ###############################################################################
 
-# =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
 # -----------------------------------------------------------------------------
 # Shared environment block for dify-api and dify-worker (DRY)
 # -----------------------------------------------------------------------------
@@ -100,7 +88,12 @@ services:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
     container_name: rag-dify-api
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       <<: *dify-shared-env
@@ -143,7 +136,12 @@ services:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
     container_name: rag-dify-worker
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       <<: *dify-shared-env
@@ -175,7 +173,12 @@ services:
     image: ${DIFY_SANDBOX_IMAGE:-langgenius/dify-sandbox:0.2.10}
     container_name: rag-dify-sandbox
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       API_KEY: ${DIFY_SANDBOX_API_KEY:-Ch4ng3me_D1fy_S4ndbox!}
@@ -209,7 +212,12 @@ services:
     image: ${DIFY_WEB_IMAGE:-langgenius/dify-web:1.13.2}
     container_name: rag-dify-web
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       CONSOLE_API_URL: ${DIFY_WEB_API_URL:-http://dify-api:5001}

@@ -19,18 +19,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICES
 # =============================================================================
 
@@ -42,7 +30,12 @@ services:
     image: ${NPM_DB_IMAGE:-jc21/mariadb-aria:latest}
     container_name: rag-npm-db
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       MYSQL_ROOT_PASSWORD: ${NPM_DB_MYSQL_ROOT_PASSWORD:-Ch4ng3me_NPM_Root!}
@@ -81,7 +74,12 @@ services:
     image: ${NPM_IMAGE:-jc21/nginx-proxy-manager:latest}
     container_name: rag-npm
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       # --- MariaDB connection ---

@@ -11,18 +11,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -35,7 +23,12 @@ services:
         PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
         POSTGRES_LOCALE: ${POSTGRES_LOCALE:-ru_RU.UTF-8}
     container_name: rag-postgres
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ragadmin}
