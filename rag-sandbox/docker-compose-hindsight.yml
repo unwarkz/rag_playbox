@@ -38,11 +38,11 @@ services:
 
     environment:
       # --- Database (PostgreSQL — hindsight database) ---
-      DATABASE_URL: ${HINDSIGHT_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/hindsight}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_HINDSIGHT:-hindsight}
 
       # --- LLM configuration (Ollama via OpenAI-compatible API) ---
       LLM_BASE_URL: http://ollama:${OLLAMA_PORT:-11434}/v1
-      LLM_MODEL: ${MEM0_LLM_MODEL:-qwen3:14b}
+      LLM_MODEL: ${HINDSIGHT_LLM_MODEL:-qwen3:14b}
       LLM_API_KEY: ${HINDSIGHT_LLM_API_KEY:-ollama}
 
       # --- Embedding (via Infinity) ---

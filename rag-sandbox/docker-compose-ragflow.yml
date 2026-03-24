@@ -46,23 +46,23 @@ services:
       DB_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
 
       # --- PostgreSQL connection (ragflow database) ---
-      PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
-      PG_PORT: ${RAGFLOW_DB_PORT:-5432}
-      PG_USER: ${RAGFLOW_DB_USER:-ragadmin}
-      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_P0stgres!}
-      PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
+      PG_HOST: postgres
+      PG_PORT: ${POSTGRES_PORT:-5432}
+      PG_USER: ${POSTGRES_USER:-ragadmin}
+      PG_PASSWORD: ${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}
+      PG_DATABASE: ${POSTGRES_DB_RAGFLOW:-ragflow}
 
       # --- Redis connection (db:0 — dedicated to RAGFlow) ---
-      REDIS_HOST: ${RAGFLOW_REDIS_HOST:-redis}
-      REDIS_PORT: ${RAGFLOW_REDIS_PORT:-6379}
-      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
       REDIS_DB: "${RAGFLOW_REDIS_DB:-0}"
 
       # --- MinIO / S3 object storage ---
-      MINIO_HOST: ${RAGFLOW_MINIO_HOST:-minio}
-      MINIO_PORT: ${RAGFLOW_MINIO_PORT:-9000}
-      MINIO_USER: ${RAGFLOW_MINIO_USER:-minioadmin}
-      MINIO_PASSWORD: ${RAGFLOW_MINIO_PASSWORD:-Ch4ng3me_Min10!}
+      MINIO_HOST: minio
+      MINIO_PORT: ${MINIO_API_PORT:-9000}
+      MINIO_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_PASSWORD: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
 
       # --- Embedding service (Infinity TEI endpoint) ---
       TEI_ENDPOINT: http://embedding:${EMBED_PORT:-7997}

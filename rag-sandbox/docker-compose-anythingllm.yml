@@ -55,8 +55,8 @@ services:
 
       # --- Vector database (Qdrant) ---
       VECTOR_DB: ${ANYTHINGLLM_VECTOR_DB:-qdrant}
-      QDRANT_ENDPOINT: ${ANYTHINGLLM_QDRANT_ENDPOINT:-http://qdrant:6333}
-      QDRANT_API_KEY: ${ANYTHINGLLM_QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+      QDRANT_ENDPOINT: http://qdrant:${QDRANT_REST_PORT:-6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
       # --- Storage ---
       STORAGE_DIR: /app/server/storage

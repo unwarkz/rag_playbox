@@ -30,7 +30,7 @@ services:
 
     environment:
       # Authentication: neo4j/<password>
-      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/Ch4ng3me_Neo4j!}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-Ch4ng3me_Neo4j!}
 
       # Auto-install plugins on first start
       NEO4J_PLUGINS: ${NEO4J_PLUGINS:-["apoc","graph-data-science"]}

@@ -32,7 +32,7 @@ services:
 
     environment:
       # --- PostgreSQL connection (langfuse database) ---
-      DATABASE_URL: ${LANGFUSE_DATABASE_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/langfuse}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_LANGFUSE:-langfuse}
 
       # --- NextAuth configuration ---
       NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-Ch4ng3me_Langfuse_NextAuth!}

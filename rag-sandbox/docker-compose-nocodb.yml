@@ -33,11 +33,11 @@ services:
 
     environment:
       # --- PostgreSQL connection (nocodb database) ---
-      NC_DB: ${NC_DB:-pg://postgres:5432?u=ragadmin&p=Ch4ng3me_P0stgres!&d=nocodb}
+      NC_DB: pg://postgres:${POSTGRES_PORT:-5432}?u=${POSTGRES_USER:-ragadmin}&p=${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}&d=${POSTGRES_DB_NOCODB:-nocodb}
       # --- Authentication ---
       NC_AUTH_JWT_SECRET: ${NC_AUTH_JWT_SECRET:-Ch4ng3me_N0coDB_JWT!}
       # --- Redis cache (db:6) ---
-      NC_REDIS_URL: ${NC_REDIS_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/6}
+      NC_REDIS_URL: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/6
       # --- Disable telemetry ---
       NC_DISABLE_TELE: "${NC_DISABLE_TELE:-true}"
       TZ: ${TZ:-UTC}

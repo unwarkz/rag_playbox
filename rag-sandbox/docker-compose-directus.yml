@@ -38,17 +38,17 @@ services:
       KEY: ${DIRECTUS_KEY:-Ch4ng3me_D1rectus_Key_Random!}
 
       # --- PostgreSQL connection (directus database) ---
-      DB_CLIENT: ${DIRECTUS_DB_CLIENT:-pg}
-      DB_HOST: ${DIRECTUS_DB_HOST:-postgres}
-      DB_PORT: ${DIRECTUS_DB_PORT:-5432}
-      DB_DATABASE: ${DIRECTUS_DB_DATABASE:-directus}
-      DB_USER: ${DIRECTUS_DB_USER:-ragadmin}
-      DB_PASSWORD: ${DIRECTUS_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_DATABASE: ${POSTGRES_DB_DIRECTUS:-directus}
+      DB_USER: ${POSTGRES_USER:-ragadmin}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}
 
-      # --- Cache via Redis (db:3) ---
+      # --- Cache via Redis (db:4) ---
       CACHE_ENABLED: ${DIRECTUS_CACHE_ENABLED:-true}
       CACHE_STORE: ${DIRECTUS_CACHE_STORE:-redis}
-      REDIS: ${DIRECTUS_REDIS:-redis://:Ch4ng3me_R3dis!@redis:6379/3}
+      REDIS: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/4
 
       # --- S3 file storage via MinIO ---
       STORAGE_LOCATIONS: ${DIRECTUS_STORAGE_LOCATIONS:-s3}
@@ -71,7 +71,7 @@ services:
       EMAIL_SMTP_PORT: "${SMTP_PORT:-587}"
 
       # --- Public URL for CORS / link generation ---
-      PUBLIC_URL: ${NC_PUBLIC_URL:-http://localhost:8027}
+      PUBLIC_URL: ${DIRECTUS_PUBLIC_URL:-http://localhost:8055}
 
       TZ: ${TZ:-UTC}
 

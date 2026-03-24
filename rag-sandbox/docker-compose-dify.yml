@@ -34,20 +34,20 @@ x-dify-shared-env: &dify-shared-env
   SECRET_KEY: ${DIFY_SECRET_KEY:-Ch4ng3me_D1fy_Secret_32chars_min!}
 
   # --- PostgreSQL connection (dify database) ---
-  DB_HOST: ${DIFY_DB_HOST:-postgres}
-  DB_PORT: ${DIFY_DB_PORT:-5432}
-  DB_USERNAME: ${DIFY_DB_USER:-ragadmin}
-  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_P0stgres!}
-  DB_DATABASE: ${DIFY_DB_NAME:-dify}
+  DB_HOST: postgres
+  DB_PORT: ${POSTGRES_PORT:-5432}
+  DB_USERNAME: ${POSTGRES_USER:-ragadmin}
+  DB_PASSWORD: ${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}
+  DB_DATABASE: ${POSTGRES_DB_DIFY:-dify}
 
   # --- Redis connection (db:1 for cache) ---
-  REDIS_HOST: ${DIFY_REDIS_HOST:-redis}
-  REDIS_PORT: ${DIFY_REDIS_PORT:-6379}
-  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+  REDIS_HOST: redis
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
   REDIS_DB: "${DIFY_REDIS_DB:-1}"
 
   # --- Celery broker (Redis db:2) ---
-  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/2}
+  CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/2
 
   # --- Vector store (Qdrant) ---
   VECTOR_STORE: ${DIFY_VECTOR_STORE:-qdrant}
@@ -56,10 +56,10 @@ x-dify-shared-env: &dify-shared-env
 
   # --- S3 / MinIO file storage ---
   STORAGE_TYPE: ${DIFY_STORAGE_TYPE:-s3}
-  S3_ENDPOINT: ${DIFY_S3_ENDPOINT:-http://minio:9000}
+  S3_ENDPOINT: http://minio:${MINIO_API_PORT:-9000}
   S3_BUCKET_NAME: ${DIFY_S3_BUCKET:-dify}
-  S3_ACCESS_KEY: ${DIFY_S3_ACCESS_KEY:-minioadmin}
-  S3_SECRET_KEY: ${DIFY_S3_SECRET_KEY:-Ch4ng3me_Min10!}
+  S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+  S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
   S3_REGION: ${DIFY_S3_REGION:-us-east-1}
 
   # --- Code sandbox ---

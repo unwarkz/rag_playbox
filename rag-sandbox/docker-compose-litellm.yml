@@ -38,6 +38,12 @@ services:
       # --- Master key for LiteLLM admin API ---
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-Ch4ng3me_L1teLLM_Master!}
 
+      # --- PostgreSQL connection (litellm database, used by config.yaml) ---
+      LITELLM_DB_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_LITELLM:-litellm}
+
+      # --- Redis password (used by cache config) ---
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+
       # --- External LLM provider API keys ---
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-sk-or-v1-your_key_here}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-your_gemini_key_here}

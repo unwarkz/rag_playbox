@@ -31,7 +31,7 @@ services:
 
     environment:
       # --- PostgreSQL connection string ---
-      DSN: ${DBHUB_DSN:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/ragdb}
+      DSN: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-ragdb}
       TZ: ${TZ:-UTC}
 
     networks:
