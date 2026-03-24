@@ -101,7 +101,7 @@ services:
       MODE: api
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — reached by dify-web and dify-worker internally
     # API: http://dify-api:5001
@@ -149,7 +149,7 @@ services:
       MODE: worker
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     depends_on:
       postgres:
@@ -187,7 +187,7 @@ services:
       TZ: ${TZ:-UTC}
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — reached by dify-api internally
     # Sandbox API: http://dify-sandbox:8194
@@ -227,9 +227,9 @@ services:
 
     networks:
       # Internal: reaches dify-api
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # Web UI: http://dify-web:3000

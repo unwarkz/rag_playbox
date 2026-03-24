@@ -43,9 +43,9 @@ services:
 
     networks:
       # S3 API (port 9000) — reachable by all backend services
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Console WebUI (port 9001) — accessible via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — Console is exposed through NPM
     # S3 API:  http://minio:9000   Console: http://minio:9001

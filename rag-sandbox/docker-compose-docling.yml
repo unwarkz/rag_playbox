@@ -41,7 +41,7 @@ services:
       - docling-cache:/tmp/docling
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach Docling via rag-internal
     # API: http://docling:5001

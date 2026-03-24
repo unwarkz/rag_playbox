@@ -78,9 +78,9 @@ services:
       - mem0-data:/mem0/data
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
-    # No external port mapping — services reach Mem0 via ${DOCKER_STACK_PREFIX}-rag-internal
+    # No external port mapping — services reach Mem0 via rag-internal
     # API: http://mem0:8888
 
     depends_on:

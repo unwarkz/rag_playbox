@@ -72,7 +72,7 @@ services:
       - redis-data:/data
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach Redis via rag-internal
 

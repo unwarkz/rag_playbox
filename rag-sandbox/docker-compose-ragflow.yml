@@ -78,9 +78,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # HTTP API + WebUI: http://ragflow:9380
@@ -127,7 +127,7 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
 
     # No external port mapping — access via rag-frontend + NPM only

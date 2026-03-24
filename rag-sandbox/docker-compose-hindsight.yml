@@ -64,9 +64,9 @@ services:
 
     networks:
       # Internal: reaches postgres, ollama, embedding, reranker
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Frontend: WebUI (port 9999) exposed via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # API:   http://hindsight:8889

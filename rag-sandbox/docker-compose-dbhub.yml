@@ -35,7 +35,7 @@ services:
       TZ: ${TZ:-UTC}
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — MCP server reached via rag-internal
     # MCP endpoint: http://dbhub:8033

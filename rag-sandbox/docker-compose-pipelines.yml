@@ -39,7 +39,7 @@ services:
       - pipelines-data:/app/pipelines
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — reached by Open WebUI internally
     # Pipelines API: http://pipelines:9099

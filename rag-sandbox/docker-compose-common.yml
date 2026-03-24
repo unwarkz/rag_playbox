@@ -31,11 +31,11 @@ x-common: &common
 # =============================================================================
 
 networks:
-  - ${DOCKER_STACK_PREFIX}-rag-internal
+  - rag-internal
     #driver: bridge
     # All containers (databases, services, everything)
 
-  - ${DOCKER_STACK_PREFIX}-rag-frontend
+  - rag-frontend
     #driver: bridge
     # UI containers + Nginx Proxy Manager only
 

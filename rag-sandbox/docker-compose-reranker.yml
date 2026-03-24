@@ -60,7 +60,7 @@ services:
       - models-cache:/models
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach reranker via rag-internal
     # OpenAI-compatible API: http://reranker:7998/v1

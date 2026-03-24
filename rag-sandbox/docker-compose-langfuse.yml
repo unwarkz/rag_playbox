@@ -65,9 +65,9 @@ services:
 
     networks:
       # Internal: reaches postgres
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://langfuse:3000

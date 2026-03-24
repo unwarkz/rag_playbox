@@ -50,7 +50,7 @@ services:
       - ollama-data:/root/.ollama
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach Ollama via rag-internal
     # API: http://ollama:11434

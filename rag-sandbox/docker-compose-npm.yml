@@ -48,7 +48,7 @@ services:
       - npm-mysql:/var/lib/mysql
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — reached by nginx-proxy-manager internally
 
@@ -101,7 +101,7 @@ services:
       - npm-letsencrypt:/etc/letsencrypt
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     depends_on:
       npm-db:

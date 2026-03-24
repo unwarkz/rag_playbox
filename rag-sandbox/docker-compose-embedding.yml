@@ -59,7 +59,7 @@ services:
       - models-cache:/models
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach embedding via rag-internal
     # OpenAI-compatible API: http://embedding:7997/v1

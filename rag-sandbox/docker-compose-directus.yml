@@ -80,9 +80,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - ${DOCKER_STACK_PREFIX}-rag-frontend
+      - rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://directus:8055

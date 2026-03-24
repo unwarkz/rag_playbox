@@ -150,7 +150,7 @@ services:
       - litellm-data:/app/data
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — reached by other services via rag-internal
     # API: http://litellm:4000

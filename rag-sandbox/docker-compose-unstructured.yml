@@ -37,7 +37,7 @@ services:
       UNSTRUCTURED_API_KEY: ${UNSTRUCTURED_API_KEY:-}
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
     # No external port mapping — services reach Unstructured via rag-internal
     # API: http://unstructured:8000

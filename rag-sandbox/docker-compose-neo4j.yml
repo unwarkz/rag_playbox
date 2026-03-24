@@ -52,9 +52,9 @@ services:
       - neo4j-plugins:/plugins
 
     networks:
-      - ${DOCKER_STACK_PREFIX}-rag-internal
+      - rag-internal
 
-    # No external port mapping — services reach Neo4j via ${DOCKER_STACK_PREFIX}-rag-internal
+    # No external port mapping — services reach Neo4j via rag-internal
     # HTTP:  http://neo4j:7474   Bolt: bolt://neo4j:7687
 
     healthcheck:
