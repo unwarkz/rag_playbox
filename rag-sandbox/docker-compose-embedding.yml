@@ -41,8 +41,7 @@ services:
       v2
         --model-id ${EMBED_MODEL:-qwen/qwen3-Embedding-8B}
         --port 7997
-
-#        --device cpu
+        --device cpu
 #        --batch-size 32
 #        --served-model-name ${EMBED_SERVED_NAME:-embed}
 
