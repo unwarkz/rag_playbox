@@ -16,3 +16,4 @@ include:
   - docker-compose-qdrant.yml
   - docker-compose-neo4j.yml
   - docker-compose-minio.yml
+  - docker-compose-mysql.yml

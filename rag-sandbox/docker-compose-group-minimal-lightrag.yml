@@ -1,25 +1,25 @@
 # =============================================================================
-# RAG Sandbox - User-Facing Platforms Group
+# RAG Sandbox - Minimal Useful Stack
 # =============================================================================
-# User-facing platforms and chat interfaces
+# Minimal stack - databases + embedding + LLM + chat UI
 #
-# Services: RAGFlow, Dify, Open WebUI, Pipelines, AnythingLLM
+# A lightweight starting point with core storage, vector embedding,
+# local LLM inference, and a chat interface.
+#
+# Services: PostgreSQL, Redis, Qdrant, MinIO, Embedding, Ollama, Open WebUI
 #
 # Usage:
-#   docker compose -f docker-compose-group-ui.yml up -d
+#   docker compose -f docker-compose-group-minimal.yml up -d
 # =============================================================================
 
 include:
   - docker-compose-common.yml
+  # Core databases
   - docker-compose-postgres.yml
   - docker-compose-redis.yml
   - docker-compose-qdrant.yml
   - docker-compose-minio.yml
-  - docker-compose-mysql.yml
-  - docker-compose-ollama.yml
-  - docker-compose-embedding.yml
-  - docker-compose-ragflow.yml
-  - docker-compose-dify.yml
+  # AI/ML
+  - docker-compose-lightrag.yml
+  # Chat UI
   - docker-compose-openwebui.yml
-  - docker-compose-pipelines.yml
-  - docker-compose-anythingllm.yml

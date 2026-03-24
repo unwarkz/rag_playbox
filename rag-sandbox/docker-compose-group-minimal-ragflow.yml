@@ -19,3 +19,4 @@ include:
   - docker-compose-minio.yml
   - docker-compose-embedding.yml
   - docker-compose-ragflow.yml
+  - docker-compose-mysql.yml
