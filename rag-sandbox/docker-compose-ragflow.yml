@@ -111,8 +111,8 @@ services:
 
 
   infinity:
-    image: ${RAGFLOW_IMAGE:-infiniflow/infinity:nightly}
-    container_name: rag-infinity-db
+    image: ${INFINITY_IMAGE:-infiniflow/infinity:nightly}
+    container_name: ${DOCKER_STACK_PREFIX}-rag-infinity-db
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
