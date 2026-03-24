@@ -91,7 +91,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      embedding:
+      infinity:
         condition: service_healthy
 
     healthcheck:
@@ -100,6 +100,44 @@ services:
           "CMD-SHELL",
           "curl -sf http://localhost:9380/ || exit 1",
         ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    cpus: ${RAGFLOW_CPU_LIMIT:-2.0}
+    mem_limit: ${RAGFLOW_MEM_LIMIT:-1536m}
+
+
+  infinity:
+    image: ${RAGFLOW_IMAGE:-infiniflow/infinity:nightly}
+    container_name: rag-infinity-db
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    environment:
+
+    volumes:
+      # Single volume mounted at /ragflow — covers both logs/ and data/ subdirs
+      - ragflow-data/infinity-db:/var/infinity
+
+    networks:
+      # Internal: reaches postgres, redis, minio, embedding
+      - rag-internal
+
+
+    # No external port mapping — access via rag-frontend + NPM only
+    # HTTP API + WebUI: http://ragflow:9380
+
+
+    healthcheck:
+      test:
+      test: ["CMD-SHELL", "timeout 5s bash -c ':> /dev/tcp/127.0.0.1/23817' || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
