@@ -9,7 +9,7 @@
 # in addition to PostgreSQL and Redis.
 #
 # Usage:
-#   docker compose -f docker-compose-group-minimal.yml up -d
+#   docker compose -f docker-compose-group-minimal-ragflow.yml up -d
 # =============================================================================
 
 include:
