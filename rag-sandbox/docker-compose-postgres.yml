@@ -120,11 +120,13 @@ services:
             "$${POSTGRES_DB_LITELLM:-litellm}/$${LITELLM_DB_USER}"; do
             db="$${dbinfo%%/*}"
             usr="$${dbinfo##*/}"
-            echo "\\connect $${db}"
+            db_escaped="$${db//\"/\"\"}"
+            usr_escaped="$${usr//\"/\"\"}"
+            echo "\\connect \"$${db_escaped}\""
             for ext in $${EXTENSIONS}; do
               echo "CREATE EXTENSION IF NOT EXISTS $${ext};"
             done
-            echo "GRANT ALL ON SCHEMA public TO $${usr};"
+            echo "GRANT ALL ON SCHEMA public TO \"$${usr_escaped}\";"
           done
         } > /docker-entrypoint-initdb.d/init.sql
 
