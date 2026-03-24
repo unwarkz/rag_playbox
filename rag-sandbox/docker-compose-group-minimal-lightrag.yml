@@ -19,6 +19,7 @@ include:
   - docker-compose-redis.yml
   - docker-compose-qdrant.yml
   - docker-compose-minio.yml
+  - docker-compose-neo4j.yml
   # AI/ML
   - docker-compose-lightrag.yml
   # Chat UI
