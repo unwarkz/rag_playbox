@@ -40,7 +40,7 @@ include:
   - ../docker-compose-unstructured.yml
   # RAG and memory
   - ../docker-compose-lightrag.yml
-  - ../docker-compose-mem0.yml
+#  - ../docker-compose-mem0.yml
   - ../docker-compose-hindsight.yml
   # UI platforms
   - ../docker-compose-ragflow.yml
