@@ -44,6 +44,7 @@ services:
 
       # --- Database type ---
       DATABASE_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
+      DEVICE=${DEVICE:-cpu}
 
       # --- PostgreSQL connection (ragflow database) ---
       PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
@@ -93,6 +94,8 @@ services:
       minio:
         condition: service_healthy
       infinity:
+        condition: service_healthy
+      mysql:
         condition: service_healthy
 
     healthcheck:
