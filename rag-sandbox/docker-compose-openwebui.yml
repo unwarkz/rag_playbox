@@ -62,7 +62,7 @@ services:
       RAG_RERANKING_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
 
       # --- PostgreSQL connection (openwebui database) ---
-      DATABASE_URL: ${OPENWEBUI_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/openwebui}
+      DATABASE_URL: ${OPENWEBUI_DB_URL:-postgresql://${OPENWEBUI_DB_USER:-openwebui}:${OPENWEBUI_DB_PASSWORD:-Ch4ng3me_0p3nWU_db!}@postgres:5432/openwebui}
 
       # --- Authentication & security ---
       WEBUI_SECRET_KEY: ${OPENWEBUI_SECRET_KEY:-Ch4ng3me_0penWebUI!}
