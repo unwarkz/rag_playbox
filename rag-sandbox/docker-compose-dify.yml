@@ -48,7 +48,7 @@ x-dify-shared-env: &dify-shared-env
   REDIS_DB: "${DIFY_REDIS_DB:-1}"
 
   # --- Celery broker (Redis db:2) ---
-  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://dify:Ch4ng3me_D1fy_redis!@redis:6379/2}
+  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://${DIFY_REDIS_USER:-dify}:${DIFY_REDIS_PASSWORD:-Ch4ng3me_D1fy_redis!}@${DIFY_REDIS_HOST:-redis}:${DIFY_REDIS_PORT:-6379}/2}
 
   # --- Vector store (Qdrant) ---
   VECTOR_STORE: ${DIFY_VECTOR_STORE:-qdrant}
