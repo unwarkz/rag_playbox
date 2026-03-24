@@ -121,11 +121,9 @@ services:
         max-size: ${LOG_MAX_SIZE:-50m}
         max-file: ${LOG_MAX_FILE:-3}
 
-    environment:
-
     volumes:
       # Single volume mounted at /ragflow — covers both logs/ and data/ subdirs
-      - ragflow-data/infinity-db:/var/infinity
+      - ragflow-data-infinity-db:/var/infinity
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
