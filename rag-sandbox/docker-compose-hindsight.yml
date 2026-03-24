@@ -46,12 +46,12 @@ services:
       LLM_API_KEY: ${HINDSIGHT_LLM_API_KEY:-ollama}
 
       # --- Embedding (via Infinity) ---
-      EMBEDDING_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
-      EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      #EMBEDDING_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
+      #EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
 
       # --- Reranker (via Infinity reranker instance) ---
-      RERANKER_BASE_URL: http://reranker:${RERANK_PORT:-7998}/v1
-      RERANKER_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+      #RERANKER_BASE_URL: http://reranker:${RERANK_PORT:-7998}/v1
+      #RERANKER_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
 
       # --- Server settings ---
       API_PORT: ${HINDSIGHT_API_PORT:-8889}
@@ -75,8 +75,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      embedding:
-        condition: service_healthy
+      #embedding:
+       # condition: service_healthy
 
     healthcheck:
       test:

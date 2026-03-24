@@ -53,10 +53,10 @@ services:
       QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
       # --- RAG embedding engine (Infinity via OpenAI-compatible API) ---
-      RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
-      RAG_OPENAI_API_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
-      RAG_OPENAI_API_KEY: ${INFINITY_API_KEY:-}
-      RAG_EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
+      #RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
+      #RAG_OPENAI_API_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
+      #RAG_OPENAI_API_KEY: ${INFINITY_API_KEY:-}
+      #RAG_EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
 
       # --- RAG reranking model ---
       RAG_RERANKING_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
@@ -96,8 +96,8 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
-      embedding:
-        condition: service_healthy
+      #embedding:
+       # condition: service_healthy
 
     healthcheck:
       test:

@@ -43,15 +43,20 @@ services:
       DOC_ENGINE: ${RAGFLOW_DOC_ENGINE:-infinity}
 
       # --- Database type ---
-      DATABASE_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
+      #DATABASE_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
       DEVICE=${DEVICE:-cpu}
 
-      # --- PostgreSQL connection (ragflow database) ---
-      PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
-      PG_PORT: ${RAGFLOW_DB_PORT:-5432}
-      PG_USER: ${RAGFLOW_DB_USER:-ragflow}
-      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_R4gfl0w_db!}
-      PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
+      # --- PostgreSQL connection (ragflow database) --- 
+      
+      ######it accepts only MYSQL#########
+
+
+
+      #PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
+      #PG_PORT: ${RAGFLOW_DB_PORT:-5432}
+      #PG_USER: ${RAGFLOW_DB_USER:-ragflow}
+      #PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_R4gfl0w_db!}
+      #PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
 
       # --- Redis connection (db:0 — dedicated to RAGFlow) ---
       REDIS_HOST: ${RAGFLOW_REDIS_HOST:-redis}
@@ -67,7 +72,7 @@ services:
       MINIO_PASSWORD: ${RAGFLOW_MINIO_PASSWORD:-Ch4ng3me_Min10!}
 
       # --- Embedding service (Infinity TEI endpoint) ---
-      TEI_ENDPOINT: http://embedding:${EMBED_PORT:-7997}
+      #TEI_ENDPOINT: http://embedding:${EMBED_PORT:-7997}
 
       # --- Server settings ---
       SVR_HTTP_PORT: "${RAGFLOW_HTTP_PORT:-9380}"
@@ -87,8 +92,8 @@ services:
     # HTTP API + WebUI: http://ragflow:9380
 
     depends_on:
-      postgres:
-        condition: service_healthy
+      #postgres:
+       # condition: service_healthy
       redis:
         condition: service_healthy
       minio:

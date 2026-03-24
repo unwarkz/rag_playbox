@@ -48,10 +48,10 @@ services:
       OLLAMA_MODEL_PREF: ${ANYTHINGLLM_OLLAMA_MODEL_PREF:-qwen3:14b}
 
       # --- Embedding engine (Infinity via generic-openai) ---
-      EMBEDDING_ENGINE: ${ANYTHINGLLM_EMBEDDING_ENGINE:-generic-openai}
-      EMBEDDING_BASE_PATH: ${ANYTHINGLLM_EMBEDDING_BASE_PATH:-http://embedding:7997}
-      EMBEDDING_MODEL_PREF: ${ANYTHINGLLM_EMBEDDING_MODEL_PREF:-Qwen/Qwen3-Embedding-0.6B}
-      GENERIC_OPEN_AI_EMBEDDING_API_KEY: ${INFINITY_API_KEY:-}
+      #EMBEDDING_ENGINE: ${ANYTHINGLLM_EMBEDDING_ENGINE:-generic-openai}
+      #EMBEDDING_BASE_PATH: ${ANYTHINGLLM_EMBEDDING_BASE_PATH:-http://embedding:7997}
+      #EMBEDDING_MODEL_PREF: ${ANYTHINGLLM_EMBEDDING_MODEL_PREF:-Qwen/Qwen3-Embedding-0.6B}
+      #GENERIC_OPEN_AI_EMBEDDING_API_KEY: ${INFINITY_API_KEY:-}
 
       # --- Vector database (Qdrant) ---
       VECTOR_DB: ${ANYTHINGLLM_VECTOR_DB:-qdrant}
@@ -82,8 +82,8 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
-      embedding:
-        condition: service_healthy
+      #embedding:
+       # condition: service_healthy
 
     healthcheck:
       test:
