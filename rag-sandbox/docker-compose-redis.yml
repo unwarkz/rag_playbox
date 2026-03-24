@@ -53,13 +53,13 @@ services:
         # Generate per-service ACL file from environment variables
         {
           echo "user default on >$${REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${RAGFLOW_REDIS_USER} on >$${RAGFLOW_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${DIFY_REDIS_USER} on >$${DIFY_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${LIGHTRAG_REDIS_USER} on >$${LIGHTRAG_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${DIRECTUS_REDIS_USER} on >$${DIRECTUS_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${NOCODB_REDIS_USER} on >$${NOCODB_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${TEABLE_REDIS_USER} on >$${TEABLE_REDIS_PASSWORD} ~* &* +@all"
-          echo "user $${LITELLM_REDIS_USER} on >$${LITELLM_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${RAGFLOW_REDIS_USER} on >$${RAGFLOW_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${DIFY_REDIS_USER} on >$${DIFY_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${LIGHTRAG_REDIS_USER} on >$${LIGHTRAG_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${DIRECTUS_REDIS_USER} on >$${DIRECTUS_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${NOCODB_REDIS_USER} on >$${NOCODB_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${TEABLE_REDIS_USER} on >$${TEABLE_REDIS_PASSWORD} ~* &* +@all"
+          echo "user ${LITELLM_REDIS_USER} on >$${LITELLM_REDIS_PASSWORD} ~* &* +@all"
         } > /data/acl.conf
 
         exec valkey-server \
