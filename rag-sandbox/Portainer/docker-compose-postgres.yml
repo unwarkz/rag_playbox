@@ -28,7 +28,7 @@ x-common: &common
 services:
   postgres:
     image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
-    container_name: rag-postgres
+    container_name: ${DOCKER_STACK_PREFIX}-postgres
     <<: *common
 
     environment:
