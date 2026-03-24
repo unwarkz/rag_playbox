@@ -52,7 +52,7 @@ services:
       # HuggingFace token — required for gated/private models
       HF_TOKEN: ${HF_TOKEN:-}
       # HuggingFace mirror endpoint (optional; useful behind a firewall)
-      HF_ENDPOINT: ${HF_ENDPOINT:-}
+      HF_ENDPOINT: ${HF_ENDPOINT:-https://huggingface.co/}
       # Cache directory for downloaded models
       HF_HUB_CACHE: /models
 
