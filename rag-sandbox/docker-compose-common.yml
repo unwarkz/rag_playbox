@@ -9,7 +9,7 @@
 #  volumes for the RAG Sandbox stack.
 ###############################################################################
 
-name: rag-toolbox-${DOCKER_STACK_PREFIX}
+name: rag-toolbox-${DOCKER_STACK_PREFIX:-rag}
 
 # =============================================================================
 # YAML ANCHORS — reusable fragments for per-service compose files
