@@ -36,18 +36,19 @@ x-dify-shared-env: &dify-shared-env
   # --- PostgreSQL connection (dify database) ---
   DB_HOST: ${DIFY_DB_HOST:-postgres}
   DB_PORT: ${DIFY_DB_PORT:-5432}
-  DB_USERNAME: ${DIFY_DB_USER:-ragadmin}
-  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+  DB_USERNAME: ${DIFY_DB_USER:-dify}
+  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_D1fy_db!}
   DB_DATABASE: ${DIFY_DB_NAME:-dify}
 
   # --- Redis connection (db:1 for cache) ---
   REDIS_HOST: ${DIFY_REDIS_HOST:-redis}
   REDIS_PORT: ${DIFY_REDIS_PORT:-6379}
-  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+  REDIS_USERNAME: ${DIFY_REDIS_USER:-dify}
+  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_D1fy_redis!}
   REDIS_DB: "${DIFY_REDIS_DB:-1}"
 
   # --- Celery broker (Redis db:2) ---
-  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/2}
+  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://dify:Ch4ng3me_D1fy_redis!@redis:6379/2}
 
   # --- Vector store (Qdrant) ---
   VECTOR_STORE: ${DIFY_VECTOR_STORE:-qdrant}

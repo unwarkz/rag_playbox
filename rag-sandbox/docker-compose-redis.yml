@@ -28,18 +28,45 @@ services:
         max-file: ${LOG_MAX_FILE:-3}
 
     # -------------------------------------------------------------------------
-    # Valkey server flags:
-    #   --requirepass   — require authentication for all clients
-    #   --save          — RDB snapshot every 60 s if ≥ 1 key changed
-    #   --maxmemory     — hard memory cap (must fit within REDIS_MEM_LIMIT)
-    #   --maxmemory-policy — eviction strategy when maxmemory is reached
+    # Per-service Redis users are configured via an ACL file generated at
+    # container start.  Each service gets its own username + password so that
+    # compromising one service's credentials does not expose the others.
+    #
+    # The default user (used by the health check) keeps REDIS_PASSWORD.
     # -------------------------------------------------------------------------
-    command: >-
-      valkey-server
-        --requirepass ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
-        --save 60 1
-        --maxmemory ${REDIS_MAXMEMORY:-180mb}
-        --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+      RAGFLOW_REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R4gfl0w_redis!}
+      DIFY_REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_D1fy_redis!}
+      LIGHTRAG_REDIS_PASSWORD: ${LIGHTRAG_REDIS_PASSWORD:-Ch4ng3me_L1ghtRAG_redis!}
+      DIRECTUS_REDIS_PASSWORD: ${DIRECTUS_REDIS_PASSWORD:-Ch4ng3me_D1rectus_redis!}
+      NOCODB_REDIS_PASSWORD: ${NOCODB_REDIS_PASSWORD:-Ch4ng3me_N0c0DB_redis!}
+      TEABLE_REDIS_PASSWORD: ${TEABLE_REDIS_PASSWORD:-Ch4ng3me_T3able_redis!}
+      LITELLM_REDIS_PASSWORD: ${LITELLM_REDIS_PASSWORD:-Ch4ng3me_L1teLLM_redis!}
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-180mb}
+      REDIS_MAXMEMORY_POLICY: ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
+
+    entrypoint:
+      - sh
+      - -c
+      - |
+        # Generate per-service ACL file from environment variables
+        {
+          echo "user default on >$${REDIS_PASSWORD} ~* &* +@all"
+          echo "user ragflow on >$${RAGFLOW_REDIS_PASSWORD} ~* &* +@all"
+          echo "user dify on >$${DIFY_REDIS_PASSWORD} ~* &* +@all"
+          echo "user lightrag on >$${LIGHTRAG_REDIS_PASSWORD} ~* &* +@all"
+          echo "user directus on >$${DIRECTUS_REDIS_PASSWORD} ~* &* +@all"
+          echo "user nocodb on >$${NOCODB_REDIS_PASSWORD} ~* &* +@all"
+          echo "user teable on >$${TEABLE_REDIS_PASSWORD} ~* &* +@all"
+          echo "user litellm on >$${LITELLM_REDIS_PASSWORD} ~* &* +@all"
+        } > /data/acl.conf
+
+        exec valkey-server \
+          --aclfile /data/acl.conf \
+          --save 60 1 \
+          --maxmemory $${REDIS_MAXMEMORY} \
+          --maxmemory-policy $${REDIS_MAXMEMORY_POLICY}
 
     volumes:
       - redis-data:/data

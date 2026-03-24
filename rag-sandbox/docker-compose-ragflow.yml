@@ -48,14 +48,15 @@ services:
       # --- PostgreSQL connection (ragflow database) ---
       PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
       PG_PORT: ${RAGFLOW_DB_PORT:-5432}
-      PG_USER: ${RAGFLOW_DB_USER:-ragadmin}
-      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+      PG_USER: ${RAGFLOW_DB_USER:-ragflow}
+      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_R4gfl0w_db!}
       PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
 
       # --- Redis connection (db:0 — dedicated to RAGFlow) ---
       REDIS_HOST: ${RAGFLOW_REDIS_HOST:-redis}
       REDIS_PORT: ${RAGFLOW_REDIS_PORT:-6379}
-      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+      REDIS_USER: ${RAGFLOW_REDIS_USER:-ragflow}
+      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R4gfl0w_redis!}
       REDIS_DB: "${RAGFLOW_REDIS_DB:-0}"
 
       # --- MinIO / S3 object storage ---

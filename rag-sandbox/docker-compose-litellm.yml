@@ -38,6 +38,13 @@ services:
       # --- Master key for LiteLLM admin API ---
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-Ch4ng3me_L1teLLM_Master!}
 
+      # --- PostgreSQL connection ---
+      LITELLM_DB_URL: ${LITELLM_DB_URL:-postgresql://litellm:Ch4ng3me_L1teLLM_db!@postgres:5432/litellm}
+
+      # --- Redis cache credentials ---
+      LITELLM_REDIS_USER: ${LITELLM_REDIS_USER:-litellm}
+      LITELLM_REDIS_PASSWORD: ${LITELLM_REDIS_PASSWORD:-Ch4ng3me_L1teLLM_redis!}
+
       # --- External LLM provider API keys ---
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-sk-or-v1-your_key_here}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-your_gemini_key_here}
@@ -126,7 +133,8 @@ services:
             type: redis
             host: redis
             port: 6379
-            password: os.environ/REDIS_PASSWORD
+            username: os.environ/LITELLM_REDIS_USER
+            password: os.environ/LITELLM_REDIS_PASSWORD
             db: 8
 
         general_settings:

@@ -60,7 +60,7 @@ services:
       QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
       # --- PostgreSQL (mem0 database — history & state) ---
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_MEM0:-mem0}
+      DATABASE_URL: postgresql://${MEM0_DB_USER:-mem0}:${MEM0_DB_PASSWORD:-Ch4ng3me_M3m0_db!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_MEM0:-mem0}
 
       # --- Neo4j (graph memory — relationship tracking) ---
       NEO4J_URI: bolt://neo4j:${NEO4J_BOLT_PORT:-7687}

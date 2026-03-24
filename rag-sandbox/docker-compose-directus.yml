@@ -42,13 +42,13 @@ services:
       DB_HOST: ${DIRECTUS_DB_HOST:-postgres}
       DB_PORT: ${DIRECTUS_DB_PORT:-5432}
       DB_DATABASE: ${DIRECTUS_DB_DATABASE:-directus}
-      DB_USER: ${DIRECTUS_DB_USER:-ragadmin}
-      DB_PASSWORD: ${DIRECTUS_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+      DB_USER: ${DIRECTUS_DB_USER:-directus}
+      DB_PASSWORD: ${DIRECTUS_DB_PASSWORD:-Ch4ng3me_D1rectus_db!}
 
-      # --- Cache via Redis (db:3) ---
+      # --- Cache via Redis (db:4) ---
       CACHE_ENABLED: ${DIRECTUS_CACHE_ENABLED:-true}
       CACHE_STORE: ${DIRECTUS_CACHE_STORE:-redis}
-      REDIS: ${DIRECTUS_REDIS:-redis://:Ch4ng3me_R3dis!@redis:6379/3}
+      REDIS: ${DIRECTUS_REDIS:-redis://directus:Ch4ng3me_D1rectus_redis!@redis:6379/4}
 
       # --- S3 file storage via MinIO ---
       STORAGE_LOCATIONS: ${DIRECTUS_STORAGE_LOCATIONS:-s3}
