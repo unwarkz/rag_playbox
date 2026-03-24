@@ -31,12 +31,12 @@ x-common: &common
 # =============================================================================
 
 networks:
-  - rag-internal
-    #driver: bridge
+  rag-internal:
+    driver: bridge
     # All containers (databases, services, everything)
 
-  - rag-frontend
-    #driver: bridge
+  rag-frontend:
+    driver: bridge
     # UI containers + Nginx Proxy Manager only
 
 # =============================================================================
