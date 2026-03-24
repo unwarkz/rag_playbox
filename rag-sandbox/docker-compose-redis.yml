@@ -67,8 +67,8 @@ services:
     # vm.overcommit_memory is not a namespaced sysctl; setting it here requires
     # the Docker daemon to allow it (add vm.overcommit_memory=1 to
     # /etc/sysctl.conf on the host for a permanent fix).
-    sysctls:
-      vm.overcommit_memory: "1"
+    #sysctls:
+    #  vm.overcommit_memory: "1"
 
     cpus: ${REDIS_CPU_LIMIT:-0.5}
     mem_limit: ${REDIS_MEM_LIMIT:-256m}
