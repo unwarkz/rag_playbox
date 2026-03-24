@@ -43,7 +43,7 @@ services:
       DOC_ENGINE: ${RAGFLOW_DOC_ENGINE:-infinity}
 
       # --- Database type ---
-      DB_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
+      DATABASE_TYPE: ${RAGFLOW_DB_TYPE:-postgres}
 
       # --- PostgreSQL connection (ragflow database) ---
       PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
