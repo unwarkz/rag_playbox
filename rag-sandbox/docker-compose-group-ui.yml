@@ -11,14 +11,14 @@
 
 include:
   - docker-compose-common.yml
-  - docker-compose-ragflow.yml
-  - docker-compose-dify.yml
-  - docker-compose-openwebui.yml
-  - docker-compose-pipelines.yml
-  - docker-compose-anythingllm.yml
   - docker-compose-postgres.yml
   - docker-compose-redis.yml
   - docker-compose-qdrant.yml
   - docker-compose-minio.yml
   - docker-compose-ollama.yml
   - docker-compose-embedding.yml
+  - docker-compose-ragflow.yml
+  - docker-compose-dify.yml
+  - docker-compose-openwebui.yml
+  - docker-compose-pipelines.yml
+  - docker-compose-anythingllm.yml

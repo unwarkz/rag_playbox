@@ -11,8 +11,8 @@
 
 include:
   - docker-compose-common.yml
+  - docker-compose-postgres.yml
   - docker-compose-npm.yml
   - docker-compose-litellm.yml
-  - docker-compose-postgres.yml
   - docker-compose-langfuse.yml
   - docker-compose-dbhub.yml

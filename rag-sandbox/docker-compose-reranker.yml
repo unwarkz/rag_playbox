@@ -17,18 +17,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -37,11 +25,16 @@ services:
     image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
     container_name: rag-reranker
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     # -------------------------------------------------------------------------
     # Infinity v2 flags:
-    #   --model-name-or-path  — HF reranker model ID
+    #   --model-id            — HF reranker model ID
     #   --served-model-name   — alias exposed in the OpenAI-compatible API
     #   --port                — HTTP listen port (internal only)
     #   --device cpu          — no GPU; uses CPU inference
@@ -49,7 +42,7 @@ services:
     # -------------------------------------------------------------------------
     command: >-
       v2
-        --model-name-or-path ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+        --model-id ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
         --served-model-name ${RERANK_SERVED_NAME:-rerank}
         --port 7998
         --device cpu

@@ -12,18 +12,6 @@
 ###############################################################################
 
 # =============================================================================
-# YAML ANCHOR — shared restart & logging policy
-# =============================================================================
-
-x-common: &common
-  restart: ${RESTART_POLICY:-unless-stopped}
-  logging:
-    driver: ${LOG_DRIVER:-json-file}
-    options:
-      max-size: ${LOG_MAX_SIZE:-50m}
-      max-file: ${LOG_MAX_FILE:-3}
-
-# =============================================================================
 # SERVICE
 # =============================================================================
 
@@ -32,7 +20,12 @@ services:
     image: ${REDIS_IMAGE:-valkey/valkey:9.0.3-alpine}
     container_name: rag-redis
 
-    <<: *common
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
 
     # -------------------------------------------------------------------------
     # Valkey server flags:
@@ -69,6 +62,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+    # Suppress Redis memory-overcommit warning.
+    # vm.overcommit_memory is not a namespaced sysctl; setting it here requires
+    # the Docker daemon to allow it (add vm.overcommit_memory=1 to
+    # /etc/sysctl.conf on the host for a permanent fix).
+    sysctls:
+      vm.overcommit_memory: "1"
 
     cpus: ${REDIS_CPU_LIMIT:-0.5}
     mem_limit: ${REDIS_MEM_LIMIT:-256m}
