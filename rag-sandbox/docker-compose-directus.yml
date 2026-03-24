@@ -23,7 +23,7 @@
 services:
   directus:
     image: ${DIRECTUS_IMAGE:-directus/directus:11.16}
-    container_name: rag-directus
+    container_name: ${DOCKER_STACK_PREFIX}-directus
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -80,9 +80,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://directus:8055

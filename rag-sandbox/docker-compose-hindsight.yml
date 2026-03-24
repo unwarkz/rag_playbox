@@ -27,7 +27,7 @@
 services:
   hindsight:
     image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight:latest}
-    container_name: rag-hindsight
+    container_name: ${DOCKER_STACK_PREFIX}-hindsight
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -64,9 +64,9 @@ services:
 
     networks:
       # Internal: reaches postgres, ollama, embedding, reranker
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI (port 9999) exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # API:   http://hindsight:8889

@@ -22,7 +22,7 @@
 services:
   nocodb:
     image: ${NOCODB_IMAGE:-nocodb/nocodb:latest}
-    container_name: rag-nocodb
+    container_name: ${DOCKER_STACK_PREFIX}-nocodb
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -47,9 +47,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://nocodb:8080

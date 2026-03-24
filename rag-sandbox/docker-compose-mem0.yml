@@ -30,7 +30,7 @@
 services:
   mem0:
     image: ${MEM0_IMAGE:-mem0/mem0-api-server:latest}
-    container_name: rag-mem0
+    container_name: ${DOCKER_STACK_PREFIX}-mem0
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -78,9 +78,9 @@ services:
       - mem0-data:/mem0/data
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
-    # No external port mapping — services reach Mem0 via rag-internal
+    # No external port mapping — services reach Mem0 via ${DOCKER_STACK_PREFIX}-rag-internal
     # API: http://mem0:8888
 
     depends_on:

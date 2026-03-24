@@ -30,7 +30,7 @@
 services:
   lightrag:
     image: ${LIGHTRAG_IMAGE:-ghcr.io/hkuds/lightrag:latest}
-    container_name: rag-lightrag
+    container_name: ${DOCKER_STACK_PREFIX}-lightrag
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -93,9 +93,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, qdrant, neo4j, ollama, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI + API: http://lightrag:9621

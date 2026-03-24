@@ -23,7 +23,7 @@
 services:
   unstructured:
     image: ${UNSTRUCTURED_IMAGE:-downloads.unstructured.io/unstructured-io/unstructured:latest}
-    container_name: rag-unstructured
+    container_name: ${DOCKER_STACK_PREFIX}-unstructured
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -37,7 +37,7 @@ services:
       UNSTRUCTURED_API_KEY: ${UNSTRUCTURED_API_KEY:-}
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Unstructured via rag-internal
     # API: http://unstructured:8000

@@ -29,7 +29,7 @@
 services:
   ragflow:
     image: ${RAGFLOW_IMAGE:-infiniflow/ragflow:v0.24.0}
-    container_name: rag-ragflow
+    container_name: ${DOCKER_STACK_PREFIX}-ragflow
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -78,9 +78,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # HTTP API + WebUI: http://ragflow:9380

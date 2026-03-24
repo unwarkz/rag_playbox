@@ -22,7 +22,7 @@ services:
       args:
         PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
         POSTGRES_LOCALE: ${POSTGRES_LOCALE:-ru_RU.UTF-8}
-    container_name: rag-postgres
+    container_name: ${DOCKER_STACK_PREFIX}-postgres
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
       driver: ${LOG_DRIVER:-json-file}
@@ -132,7 +132,7 @@ services:
         exec docker-entrypoint.sh postgres
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Postgres via rag-internal
 

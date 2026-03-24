@@ -20,7 +20,7 @@
 services:
   dbhub:
     image: ${DBHUB_IMAGE:-bytebase/dbhub:latest}
-    container_name: rag-dbhub
+    container_name: ${DOCKER_STACK_PREFIX}-dbhub
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -35,7 +35,7 @@ services:
       TZ: ${TZ:-UTC}
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — MCP server reached via rag-internal
     # MCP endpoint: http://dbhub:8033

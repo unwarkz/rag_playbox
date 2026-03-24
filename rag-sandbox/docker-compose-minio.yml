@@ -18,7 +18,7 @@
 services:
   minio:
     image: ${MINIO_IMAGE:-pgsty/minio:latest}
-    container_name: rag-minio
+    container_name: ${DOCKER_STACK_PREFIX}-minio
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -43,9 +43,9 @@ services:
 
     networks:
       # S3 API (port 9000) — reachable by all backend services
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Console WebUI (port 9001) — accessible via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — Console is exposed through NPM
     # S3 API:  http://minio:9000   Console: http://minio:9001
