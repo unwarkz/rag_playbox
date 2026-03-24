@@ -46,6 +46,10 @@ services:
         --batch-size 32
 
     environment:
+      # API key callers must supply (Bearer token). Empty = no auth required.
+      INFINITY_API_KEY: ${INFINITY_API_KEY:-}
+      # HuggingFace token — required for gated/private models
+      HF_TOKEN: ${HF_TOKEN:-}
       # HuggingFace mirror endpoint (optional; useful behind a firewall)
       HF_ENDPOINT: ${HF_ENDPOINT:-}
       # Cache directory for downloaded models

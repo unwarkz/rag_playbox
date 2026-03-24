@@ -55,7 +55,7 @@ services:
       # --- RAG embedding engine (Infinity via OpenAI-compatible API) ---
       RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
       RAG_OPENAI_API_BASE_URL: http://embedding:${EMBED_PORT:-7997}/v1
-      RAG_OPENAI_API_KEY: ${OPENWEBUI_RAG_OPENAI_API_KEY:-none}
+      RAG_OPENAI_API_KEY: ${INFINITY_API_KEY:-}
       RAG_EMBEDDING_MODEL: ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
 
       # --- RAG reranking model ---
