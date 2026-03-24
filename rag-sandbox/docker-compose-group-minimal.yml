@@ -9,7 +9,7 @@
 # Services: PostgreSQL, Redis, Qdrant, MinIO, Embedding, Ollama, Open WebUI
 #
 # Usage:
-#   docker compose -f docker-compose-minimal.yml up -d
+#   docker compose -f docker-compose-group-minimal.yml up -d
 # =============================================================================
 
 include:
