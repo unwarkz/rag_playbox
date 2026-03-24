@@ -17,7 +17,7 @@ include:
   - docker-compose-tika.yml
   - docker-compose-unstructured.yml
   # RAG and memory
-  #- docker-compose-lightrag.yml
+  - docker-compose-lightrag.yml
   #- docker-compose-mem0.yml
   - docker-compose-hindsight.yml
   # UI platforms
@@ -25,7 +25,7 @@ include:
   - docker-compose-dify.yml
   - docker-compose-openwebui.yml
   - docker-compose-pipelines.yml
-  #- docker-compose-anythingllm.yml
+  - docker-compose-anythingllm.yml
   # Content management
   - docker-compose-nocodb.yml
   - docker-compose-directus.yml
