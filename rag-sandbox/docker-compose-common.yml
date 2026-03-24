@@ -9,7 +9,7 @@
 #  volumes for the RAG Sandbox stack.
 ###############################################################################
 
-name: rag-sandbox
+name: rag-toolbox
 
 # =============================================================================
 # YAML ANCHORS — reusable fragments for per-service compose files
@@ -22,28 +22,9 @@ x-common: &common
     options:
       max-size: ${LOG_MAX_SIZE:-50m}
       max-file: ${LOG_MAX_FILE:-3}
-
-x-default-resources: &default-resources
   cpus: ${DEFAULT_CPU_LIMIT:-1.0}
   mem_limit: ${DEFAULT_MEM_LIMIT:-512m}
 
-x-depends-db: &depends-db
-  depends_on:
-    postgres:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
-
-x-depends-full: &depends-full
-  depends_on:
-    postgres:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
-    qdrant:
-      condition: service_healthy
-    minio:
-      condition: service_healthy
 
 # =============================================================================
 # NETWORKS
