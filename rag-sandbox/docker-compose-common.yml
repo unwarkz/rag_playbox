@@ -52,6 +52,7 @@ volumes:
   neo4j-logs:
   neo4j-plugins:
   minio-data:
+  infinity-data:
 
   # --- AI / ML layer ---
   models-cache:
