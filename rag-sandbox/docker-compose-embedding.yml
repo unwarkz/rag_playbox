@@ -19,7 +19,7 @@
 
 services:
   embedding:
-    image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
+    image: ${INFINITY_IMAGE:-michaelf34/infinity:latest-cpu}
     container_name: ${DOCKER_STACK_PREFIX}-embedding
 
     restart: ${RESTART_POLICY:-unless-stopped}
@@ -39,11 +39,12 @@ services:
     # -------------------------------------------------------------------------
     command: >-
       v2
-        --model-id ${EMBED_MODEL:-Qwen/Qwen3-Embedding-0.6B}
-        --served-model-name ${EMBED_SERVED_NAME:-embed}
+        --model-id ${EMBED_MODEL:-qwen/qwen3-Embedding-8B}
         --port 7997
-        --device cpu
-        --batch-size 32
+
+#        --device cpu
+#        --batch-size 32
+#        --served-model-name ${EMBED_SERVED_NAME:-embed}
 
     environment:
       # API key callers must supply (Bearer token). Empty = no auth required.
