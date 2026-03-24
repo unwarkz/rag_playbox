@@ -129,7 +129,7 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
 
     # No external port mapping — access via rag-frontend + NPM only
