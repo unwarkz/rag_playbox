@@ -142,7 +142,7 @@ services:
         exec docker-entrypoint.sh postgres
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Postgres via rag-internal
 
