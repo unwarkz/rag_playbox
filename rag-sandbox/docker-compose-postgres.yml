@@ -100,10 +100,10 @@ services:
           echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_MEM0:-mem0}', '$${MEM0_DB_USER}') \gexec"
           echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_HINDSIGHT:-hindsight}', '$${HINDSIGHT_DB_USER}') \gexec"
           echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_DIRECTUS:-directus}', '$${DIRECTUS_DB_USER}') \gexec"
-          echo "CREATE DATABASE $${POSTGRES_DB_NOCODB:-nocodb} OWNER $${NOCODB_DB_USER};"
-          echo "CREATE DATABASE $${POSTGRES_DB_TEABLE:-teable} OWNER $${TEABLE_DB_USER};"
-          echo "CREATE DATABASE $${POSTGRES_DB_LANGFUSE:-langfuse} OWNER $${LANGFUSE_DB_USER};"
-          echo "CREATE DATABASE $${POSTGRES_DB_LITELLM:-litellm} OWNER $${LITELLM_DB_USER};"
+          echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_NOCODB:-nocodb}', '$${NOCODB_DB_USER}') \gexec"
+          echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_TEABLE:-teable}', '$${TEABLE_DB_USER}') \gexec"
+          echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_LANGFUSE:-langfuse}', '$${LANGFUSE_DB_USER}') \gexec"
+          echo "SELECT format('CREATE DATABASE %I OWNER %I', '$${POSTGRES_DB_LITELLM:-litellm}', '$${LITELLM_DB_USER}') \gexec"
 
           # ── extensions + public schema grant in each service database ──
           for dbinfo in \
