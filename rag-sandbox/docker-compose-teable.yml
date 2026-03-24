@@ -23,7 +23,7 @@
 services:
   teable:
     image: ${TEABLE_IMAGE:-ghcr.io/teableio/teable:latest}
-    container_name: rag-teable
+    container_name: ${DOCKER_STACK_PREFIX}-teable
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -34,7 +34,7 @@ services:
 
     environment:
       # --- PostgreSQL connection via Prisma ---
-      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://ragadmin:Ch4ng3me_P0stgres!@postgres:5432/teable}
+      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://teable:Ch4ng3me_T3able_db!@postgres:5432/teable}
 
       # --- Application secret ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
@@ -51,9 +51,9 @@ services:
       BACKEND_STORAGE_MINIO_BUCKET: ${MINIO_DEFAULT_BUCKET:-rag-documents}
       BACKEND_STORAGE_MINIO_USE_SSL: "${TEABLE_STORAGE_MINIO_USE_SSL:-false}"
 
-      # --- Redis ---
+      # --- Redis (db:7 — per-service user auth) ---
       BACKEND_CACHE_PROVIDER: ${TEABLE_CACHE_PROVIDER:-redis}
-      BACKEND_CACHE_REDIS_URI: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/7
+      BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://teable:Ch4ng3me_T3able_redis!@redis:6379/7}
 
       # --- Mail settings (placeholder — configure for production) ---
       BACKEND_MAIL_HOST: ${SMTP_HOST:-}
@@ -69,9 +69,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://teable:3000

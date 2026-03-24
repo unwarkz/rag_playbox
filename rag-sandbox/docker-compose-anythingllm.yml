@@ -28,7 +28,7 @@
 services:
   anythingllm:
     image: ${ANYTHINGLLM_IMAGE:-mintplexlabs/anythingllm:latest}
-    container_name: rag-anythingllm
+    container_name: ${DOCKER_STACK_PREFIX}-anythingllm
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -70,9 +70,9 @@ services:
 
     networks:
       # Internal: reaches qdrant, ollama, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI + API: http://anythingllm:3001

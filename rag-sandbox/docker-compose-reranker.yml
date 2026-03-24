@@ -23,7 +23,7 @@
 services:
   reranker:
     image: ${INFINITY_IMAGE:-michaelf34/infinity:latest}
-    container_name: rag-reranker
+    container_name: ${DOCKER_STACK_PREFIX}-reranker
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -60,7 +60,7 @@ services:
       - models-cache:/models
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach reranker via rag-internal
     # OpenAI-compatible API: http://reranker:7998/v1

@@ -28,7 +28,7 @@ services:
   # ---------------------------------------------------------------------------
   npm-db:
     image: ${NPM_DB_IMAGE:-jc21/mariadb-aria:latest}
-    container_name: rag-npm-db
+    container_name: ${DOCKER_STACK_PREFIX}-npm-db
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -48,7 +48,7 @@ services:
       - npm-mysql:/var/lib/mysql
 
     networks:
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — reached by nginx-proxy-manager internally
 
@@ -72,7 +72,7 @@ services:
   # ---------------------------------------------------------------------------
   nginx-proxy-manager:
     image: ${NPM_IMAGE:-jc21/nginx-proxy-manager:latest}
-    container_name: rag-npm
+    container_name: ${DOCKER_STACK_PREFIX}-npm
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -101,7 +101,7 @@ services:
       - npm-letsencrypt:/etc/letsencrypt
 
     networks:
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     depends_on:
       npm-db:

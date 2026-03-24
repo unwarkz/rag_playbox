@@ -21,7 +21,7 @@
 services:
   langfuse:
     image: ${LANGFUSE_IMAGE:-langfuse/langfuse:3}
-    container_name: rag-langfuse
+    container_name: ${DOCKER_STACK_PREFIX}-langfuse
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -65,9 +65,9 @@ services:
 
     networks:
       # Internal: reaches postgres
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://langfuse:3000

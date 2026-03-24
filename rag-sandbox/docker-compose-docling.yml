@@ -20,7 +20,7 @@
 services:
   docling:
     image: ${DOCLING_IMAGE:-quay.io/ds4sd/docling-serve:latest}
-    container_name: rag-docling
+    container_name: ${DOCKER_STACK_PREFIX}-docling
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -41,7 +41,7 @@ services:
       - docling-cache:/tmp/docling
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Docling via rag-internal
     # API: http://docling:5001

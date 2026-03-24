@@ -18,7 +18,7 @@
 services:
   qdrant:
     image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.16.3}
-    container_name: rag-qdrant
+    container_name: ${DOCKER_STACK_PREFIX}-qdrant
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -38,7 +38,7 @@ services:
       - qdrant-data:/qdrant/storage
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Qdrant via rag-internal
     # REST: http://qdrant:6333   gRPC: qdrant:6334

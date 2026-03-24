@@ -36,18 +36,19 @@ x-dify-shared-env: &dify-shared-env
   # --- PostgreSQL connection (dify database) ---
   DB_HOST: ${DIFY_DB_HOST:-postgres}
   DB_PORT: ${DIFY_DB_PORT:-5432}
-  DB_USERNAME: ${DIFY_DB_USER:-ragadmin}
-  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+  DB_USERNAME: ${DIFY_DB_USER:-dify}
+  DB_PASSWORD: ${DIFY_DB_PASSWORD:-Ch4ng3me_D1fy_db!}
   DB_DATABASE: ${DIFY_DB_NAME:-dify}
 
   # --- Redis connection (db:1 for cache) ---
   REDIS_HOST: ${DIFY_REDIS_HOST:-redis}
   REDIS_PORT: ${DIFY_REDIS_PORT:-6379}
-  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+  REDIS_USERNAME: ${DIFY_REDIS_USER:-dify}
+  REDIS_PASSWORD: ${DIFY_REDIS_PASSWORD:-Ch4ng3me_D1fy_redis!}
   REDIS_DB: "${DIFY_REDIS_DB:-1}"
 
   # --- Celery broker (Redis db:2) ---
-  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://:Ch4ng3me_R3dis!@redis:6379/2}
+  CELERY_BROKER_URL: ${DIFY_CELERY_BROKER_URL:-redis://${DIFY_REDIS_USER:-dify}:${DIFY_REDIS_PASSWORD:-Ch4ng3me_D1fy_redis!}@${DIFY_REDIS_HOST:-redis}:${DIFY_REDIS_PORT:-6379}/2}
 
   # --- Vector store (Qdrant) ---
   VECTOR_STORE: ${DIFY_VECTOR_STORE:-qdrant}
@@ -86,7 +87,7 @@ services:
   # ---------------------------------------------------------------------------
   dify-api:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
-    container_name: rag-dify-api
+    container_name: ${DOCKER_STACK_PREFIX}-dify-api
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -100,7 +101,7 @@ services:
       MODE: api
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — reached by dify-web and dify-worker internally
     # API: http://dify-api:5001
@@ -134,7 +135,7 @@ services:
   # ---------------------------------------------------------------------------
   dify-worker:
     image: ${DIFY_API_IMAGE:-langgenius/dify-api:1.13.2}
-    container_name: rag-dify-worker
+    container_name: ${DOCKER_STACK_PREFIX}-dify-worker
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -148,7 +149,7 @@ services:
       MODE: worker
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     depends_on:
       postgres:
@@ -171,7 +172,7 @@ services:
   # ---------------------------------------------------------------------------
   dify-sandbox:
     image: ${DIFY_SANDBOX_IMAGE:-langgenius/dify-sandbox:0.2.10}
-    container_name: rag-dify-sandbox
+    container_name: ${DOCKER_STACK_PREFIX}-dify-sandbox
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -186,7 +187,7 @@ services:
       TZ: ${TZ:-UTC}
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — reached by dify-api internally
     # Sandbox API: http://dify-sandbox:8194
@@ -210,7 +211,7 @@ services:
   # ---------------------------------------------------------------------------
   dify-web:
     image: ${DIFY_WEB_IMAGE:-langgenius/dify-web:1.13.2}
-    container_name: rag-dify-web
+    container_name: ${DOCKER_STACK_PREFIX}-dify-web
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -226,9 +227,9 @@ services:
 
     networks:
       # Internal: reaches dify-api
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # Web UI: http://dify-web:3000

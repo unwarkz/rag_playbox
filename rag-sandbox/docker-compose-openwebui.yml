@@ -29,7 +29,7 @@
 services:
   openwebui:
     image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:main}
-    container_name: rag-openwebui
+    container_name: ${DOCKER_STACK_PREFIX}-openwebui
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -82,9 +82,9 @@ services:
 
     networks:
       # Internal: reaches postgres, qdrant, ollama, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI: http://openwebui:8080

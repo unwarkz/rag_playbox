@@ -30,7 +30,7 @@
 services:
   mem0:
     image: ${MEM0_IMAGE:-mem0/mem0-api-server:latest}
-    container_name: rag-mem0
+    container_name: ${DOCKER_STACK_PREFIX}-mem0
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -60,7 +60,7 @@ services:
       QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
 
       # --- PostgreSQL (mem0 database — history & state) ---
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ragadmin}:${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_MEM0:-mem0}
+      DATABASE_URL: postgresql://${MEM0_DB_USER:-mem0}:${MEM0_DB_PASSWORD:-Ch4ng3me_M3m0_db!}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_MEM0:-mem0}
 
       # --- Neo4j (graph memory — relationship tracking) ---
       NEO4J_URI: bolt://neo4j:${NEO4J_BOLT_PORT:-7687}
@@ -78,9 +78,9 @@ services:
       - mem0-data:/mem0/data
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
-    # No external port mapping — services reach Mem0 via rag-internal
+    # No external port mapping — services reach Mem0 via ${DOCKER_STACK_PREFIX}-rag-internal
     # API: http://mem0:8888
 
     depends_on:

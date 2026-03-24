@@ -23,7 +23,7 @@
 services:
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
-    container_name: rag-tika
+    container_name: ${DOCKER_STACK_PREFIX}-tika
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -37,7 +37,7 @@ services:
       JAVA_OPTS: ${TIKA_JAVA_OPTS:--Xms128m -Xmx320m}
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Tika via rag-internal
     # API: http://tika:9998

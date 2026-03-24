@@ -22,7 +22,7 @@
 services:
   ollama:
     image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
-    container_name: rag-ollama
+    container_name: ${DOCKER_STACK_PREFIX}-ollama
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -50,7 +50,7 @@ services:
       - ollama-data:/root/.ollama
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — services reach Ollama via rag-internal
     # API: http://ollama:11434

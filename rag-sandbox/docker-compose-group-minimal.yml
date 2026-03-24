@@ -1,12 +1,12 @@
 # =============================================================================
-# RAG Sandbox — Minimal RAG Stack
+# RAG Sandbox - Minimal Useful Stack
 # =============================================================================
-# Bare minimum for a working RAG platform.
+# Minimal stack - databases + embedding + LLM + chat UI
 #
-# Services: PostgreSQL, Redis, MinIO, Embedding, RAGFlow
+# A lightweight starting point with core storage, vector embedding,
+# local LLM inference, and a chat interface.
 #
-# RAGFlow requires MinIO (document storage) and Embedding (TEI endpoint)
-# in addition to PostgreSQL and Redis.
+# Services: PostgreSQL, Redis, Qdrant, MinIO, Embedding, Ollama, Open WebUI
 #
 # Usage:
 #   docker compose -f docker-compose-group-minimal.yml up -d
@@ -14,8 +14,13 @@
 
 include:
   - docker-compose-common.yml
+  # Core databases
   - docker-compose-postgres.yml
   - docker-compose-redis.yml
+  - docker-compose-qdrant.yml
   - docker-compose-minio.yml
+  # AI/ML
   - docker-compose-embedding.yml
-  - docker-compose-ragflow.yml
+  - docker-compose-ollama.yml
+  # Chat UI
+  - docker-compose-openwebui.yml

@@ -9,7 +9,7 @@
 #  volumes for the RAG Sandbox stack.
 ###############################################################################
 
-name: rag-toolbox
+name: rag-toolbox-${DOCKER_STACK_PREFIX:-rag}
 
 # =============================================================================
 # YAML ANCHORS — reusable fragments for per-service compose files
@@ -31,11 +31,11 @@ x-common: &common
 # =============================================================================
 
 networks:
-  rag-internal:
+  ${DOCKER_STACK_PREFIX}-rag-internal:
     driver: bridge
     # All containers (databases, services, everything)
 
-  rag-frontend:
+  ${DOCKER_STACK_PREFIX}-rag-frontend:
     driver: bridge
     # UI containers + Nginx Proxy Manager only
 

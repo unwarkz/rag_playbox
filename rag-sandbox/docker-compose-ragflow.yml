@@ -29,7 +29,7 @@
 services:
   ragflow:
     image: ${RAGFLOW_IMAGE:-infiniflow/ragflow:v0.24.0}
-    container_name: rag-ragflow
+    container_name: ${DOCKER_STACK_PREFIX}-ragflow
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -48,14 +48,15 @@ services:
       # --- PostgreSQL connection (ragflow database) ---
       PG_HOST: ${RAGFLOW_DB_HOST:-postgres}
       PG_PORT: ${RAGFLOW_DB_PORT:-5432}
-      PG_USER: ${RAGFLOW_DB_USER:-ragadmin}
-      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_P0stgres!}
+      PG_USER: ${RAGFLOW_DB_USER:-ragflow}
+      PG_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_R4gfl0w_db!}
       PG_DATABASE: ${RAGFLOW_DB_NAME:-ragflow}
 
       # --- Redis connection (db:0 — dedicated to RAGFlow) ---
       REDIS_HOST: ${RAGFLOW_REDIS_HOST:-redis}
       REDIS_PORT: ${RAGFLOW_REDIS_PORT:-6379}
-      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R3dis!}
+      REDIS_USER: ${RAGFLOW_REDIS_USER:-ragflow}
+      REDIS_PASSWORD: ${RAGFLOW_REDIS_PASSWORD:-Ch4ng3me_R4gfl0w_redis!}
       REDIS_DB: "${RAGFLOW_REDIS_DB:-0}"
 
       # --- MinIO / S3 object storage ---
@@ -77,9 +78,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # HTTP API + WebUI: http://ragflow:9380
@@ -110,8 +111,8 @@ services:
 
 
   infinity:
-    image: ${RAGFLOW_IMAGE:-infiniflow/infinity:nightly}
-    container_name: rag-infinity-db
+    image: ${INFINITY_IMAGE:-infiniflow/infinity:nightly}
+    container_name: ${DOCKER_STACK_PREFIX}-rag-infinity-db
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -120,15 +121,13 @@ services:
         max-size: ${LOG_MAX_SIZE:-50m}
         max-file: ${LOG_MAX_FILE:-3}
 
-    environment:
-
     volumes:
       # Single volume mounted at /ragflow — covers both logs/ and data/ subdirs
-      - ragflow-data/infinity-db:/var/infinity
+      - ragflow-data-infinity-db:/var/infinity
 
     networks:
       # Internal: reaches postgres, redis, minio, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
 
     # No external port mapping — access via rag-frontend + NPM only
@@ -136,7 +135,6 @@ services:
 
 
     healthcheck:
-      test:
       test: ["CMD-SHELL", "timeout 5s bash -c ':> /dev/tcp/127.0.0.1/23817' || exit 1"]
       interval: 15s
       timeout: 5s

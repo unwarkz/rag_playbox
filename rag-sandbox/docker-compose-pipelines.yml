@@ -22,7 +22,7 @@
 services:
   pipelines:
     image: ${OPENWEBUI_PIPELINES_IMAGE:-ghcr.io/open-webui/pipelines:main}
-    container_name: rag-pipelines
+    container_name: ${DOCKER_STACK_PREFIX}-pipelines
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -39,7 +39,7 @@ services:
       - pipelines-data:/app/pipelines
 
     networks:
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
 
     # No external port mapping — reached by Open WebUI internally
     # Pipelines API: http://pipelines:9099

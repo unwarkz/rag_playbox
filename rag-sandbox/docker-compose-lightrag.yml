@@ -30,7 +30,7 @@
 services:
   lightrag:
     image: ${LIGHTRAG_IMAGE:-ghcr.io/hkuds/lightrag:latest}
-    container_name: rag-lightrag
+    container_name: ${DOCKER_STACK_PREFIX}-lightrag
 
     restart: ${RESTART_POLICY:-unless-stopped}
     logging:
@@ -62,12 +62,12 @@ services:
       # --- PostgreSQL connection (lightrag database) ---
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_USER: ${POSTGRES_USER:-ragadmin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Ch4ng3me_P0stgres!}
+      POSTGRES_USER: ${LIGHTRAG_DB_USER:-lightrag}
+      POSTGRES_PASSWORD: ${LIGHTRAG_DB_PASSWORD:-Ch4ng3me_L1ghtRAG_db!}
       POSTGRES_DATABASE: ${POSTGRES_DB_LIGHTRAG:-lightrag}
 
       # --- Redis (db 3 — avoids conflicts with Dify db:1/2) ---
-      REDIS_URI: redis://:${REDIS_PASSWORD:-Ch4ng3me_R3dis!}@redis:${REDIS_PORT:-6379}/3
+      REDIS_URI: ${LIGHTRAG_REDIS_URI:-redis://lightrag:Ch4ng3me_L1ghtRAG_redis!@redis:6379/3}
 
       # --- Qdrant vector database ---
       QDRANT_URL: http://qdrant:${QDRANT_REST_PORT:-6333}
@@ -93,9 +93,9 @@ services:
 
     networks:
       # Internal: reaches postgres, redis, qdrant, neo4j, ollama, embedding
-      - rag-internal
+      - ${DOCKER_STACK_PREFIX}-rag-internal
       # Frontend: WebUI exposed via Nginx Proxy Manager
-      - rag-frontend
+      - ${DOCKER_STACK_PREFIX}-rag-frontend
 
     # No external port mapping — access via rag-frontend + NPM only
     # WebUI + API: http://lightrag:9621

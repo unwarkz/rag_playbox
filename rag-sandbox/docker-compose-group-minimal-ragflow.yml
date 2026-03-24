@@ -1,0 +1,21 @@
+# =============================================================================
+# RAG Sandbox — Minimal RAG Stack
+# =============================================================================
+# Bare minimum for a working RAG platform.
+#
+# Services: PostgreSQL, Redis, MinIO, Embedding, RAGFlow
+#
+# RAGFlow requires MinIO (document storage) and Embedding (TEI endpoint)
+# in addition to PostgreSQL and Redis.
+#
+# Usage:
+#   docker compose -f docker-compose-group-minimal-ragflow.yml up -d
+# =============================================================================
+
+include:
+  - docker-compose-common.yml
+  - docker-compose-postgres.yml
+  - docker-compose-redis.yml
+  - docker-compose-minio.yml
+  - docker-compose-embedding.yml
+  - docker-compose-ragflow.yml
