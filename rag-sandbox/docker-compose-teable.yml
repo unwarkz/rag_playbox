@@ -54,7 +54,7 @@ services:
 
       # --- Redis (db:7 — per-service user auth) ---
       BACKEND_CACHE_PROVIDER: ${TEABLE_CACHE_PROVIDER:-redis}
-      BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://${TEABLE_REDIS_USER:-teable}:${TEABLE_REDIS_PASSWORD:-Ch4ng3me_T3able_redis!}@redis:6379/${TEABLE_REDIS_DB:-7}}
+      BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://${TEABLE_REDIS_USER}:${TEABLE_REDIS_PASSWORD}@redis:6379/${TEABLE_REDIS_DB:-7}}
 
       # --- Mail settings (placeholder — configure for production) ---
       BACKEND_MAIL_HOST: ${SMTP_HOST:-}
