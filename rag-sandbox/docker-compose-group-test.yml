@@ -6,32 +6,32 @@ include:
   # Databases
   - docker-compose-postgres.yml
   - docker-compose-redis.yml
-  - docker-compose-qdrant.yml
-  - docker-compose-neo4j.yml
+  #- docker-compose-qdrant.yml
+  #- docker-compose-neo4j.yml
   - docker-compose-minio.yml
   # AI/ML inference
   #- docker-compose-embedding.yml
   #- docker-compose-reranker.yml
-  - docker-compose-ollama.yml
+  #- docker-compose-ollama.yml
   #- docker-compose-docling.yml
-  - docker-compose-tika.yml
-  - docker-compose-unstructured.yml
+  #- docker-compose-tika.yml
+  #- docker-compose-unstructured.yml
   # RAG and memory
-  - docker-compose-lightrag.yml
+  #- docker-compose-lightrag.yml
   #- docker-compose-mem0.yml
   #- docker-compose-hindsight.yml
   # UI platforms
   #- docker-compose-ragflow.yml
   - docker-compose-dify.yml
-  - docker-compose-openwebui.yml
-  - docker-compose-pipelines.yml
-  - docker-compose-anythingllm.yml
+  #- docker-compose-openwebui.yml
+  #- docker-compose-pipelines.yml
+  #- docker-compose-anythingllm.yml
   # Content management
   #- docker-compose-nocodb.yml
   #- docker-compose-directus.yml
   - docker-compose-teable.yml
   # Infrastructure
   #- docker-compose-npm.yml
-  - docker-compose-litellm.yml
+  #- docker-compose-litellm.yml
   #- docker-compose-langfuse.yml
   #- docker-compose-dbhub.yml
