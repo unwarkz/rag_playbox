@@ -34,7 +34,7 @@ services:
 
     environment:
       # --- PostgreSQL connection via Prisma ---
-      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER:-teable}:${TEABLE_DB_PASSWORD:-Ch4ng3me_T3able_db!}@postgres:5432/${POSTGRES_DB_TEABLE}}
+      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER:-teable}:${TEABLE_DB_PASSWORD:-Ch4ng3me_T3able_db!}@postgres:5432/${POSTGRES_DB_TEABLE:-teable}}
 
       # --- Application secret ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
