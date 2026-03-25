@@ -16,11 +16,12 @@
 
 services:
   postgres:
+    <<: *common
     build:
       context: ./postgres
       dockerfile: Dockerfile
       args:
-        PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
+        PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg18}
         POSTGRES_LOCALE: ${POSTGRES_LOCALE:-ru_RU.UTF-8}
     container_name: ${DOCKER_STACK_PREFIX}-postgres
     restart: ${RESTART_POLICY:-unless-stopped}
@@ -29,6 +30,7 @@ services:
       options:
         max-size: ${LOG_MAX_SIZE:-50m}
         max-file: ${LOG_MAX_FILE:-3}
+    command: postgres -c maintenance_work_mem=512MB -c shared_buffers=512MB -c max_connections=200
 
     environment:
       # --- PostgreSQL Server Configuration ---
@@ -45,7 +47,7 @@ services:
       PGPORT: ${PGPORT:-5432}
       PGDATABASE: ${PGDATABASE:-${POSTGRES_DB:-ragdb}}
       PGUSER: ${PGUSER:-${POSTGRES_USER:-ragadmin}}
-      PGPASSWORD: ${PGPASSWORD:-}
+      PGPASSWORD: ${PGPASSWORD:-${POSTGRES_PASSWORD}}
       PGPASSFILE: ${PGPASSFILE:-}
       PGSERVICE: ${PGSERVICE:-}
       PGSERVICEFILE: ${PGSERVICEFILE:-}

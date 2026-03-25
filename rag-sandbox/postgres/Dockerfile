@@ -1,11 +1,5 @@
 ARG PG_BASE=pgvector/pgvector:pg18
 FROM ${PG_BASE}
-
-ARG POSTGRES_LOCALE=ru_RU.UTF-8
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends locales \
-    && sed -i "/${POSTGRES_LOCALE}/s/^# //" /etc/locale.gen \
-    && locale-gen \
-    && apt-get purge -y --auto-remove \
-    && rm -rf /var/lib/apt/lists/*
+ARG POSTGRES_LOCALE
+RUN localedef -i ${POSTGRES_LOCALE%%.*} -c -f ${POSTGRES_LOCALE##*.} -A /usr/share/locale/locale.alias ${POSTGRES_LOCALE}
+ENV LANG ${POSTGRES_LOCALE}
