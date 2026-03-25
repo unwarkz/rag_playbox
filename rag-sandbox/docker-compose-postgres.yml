@@ -142,36 +142,36 @@ services:
         #!/bin/bash
         set -e
         # Проверим, что переменные дошли
-        echo "Running init script for user: $POSTGRES_USER"
+        echo "Running init script for user: $$POSTGRES_USER"
 
         # Список сервисов
         SERVICES="RAGFLOW DIFY OPENWEBUI LIGHTRAG MEM0 HINDSIGHT DIRECTUS NOCODB TEABLE LANGFUSE LITELLM"
 
-        for S in $SERVICES; do
+        for S in $$SERVICES; do
             # Магия bash для получения значений по имени переменной
-            U_VAR="${S}_DB_USER"
-            P_VAR="${S}_DB_PASSWORD"
-            D_VAR="POSTGRES_DB_${S}"
+            U_VAR="$${S}_DB_USER"
+            P_VAR="$${S}_DB_PASSWORD"
+            D_VAR="POSTGRES_DB_$${S}"
             
-            DB_USER=${!U_VAR}
-            DB_PASS=${!P_VAR}
-            DB_NAME=${!D_VAR:-${S,,}}
+            DB_USER=$${!U_VAR}
+            DB_PASS=$${!P_VAR}
+            DB_NAME=$${!D_VAR:-$${S,,}}
 
-            echo "Creating DB: $DB_NAME for $DB_USER"
+            echo "Creating DB: $$DB_NAME for $$DB_USER"
 
             # Выполняем создание БД и пользователя
-            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
-                CREATE USER "$DB_USER" WITH PASSWORD '$DB_PASS';
-                CREATE DATABASE "$DB_NAME" OWNER "$DB_USER";
+            psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+                CREATE USER "$$DB_USER" WITH PASSWORD '$$DB_PASS';
+                CREATE DATABASE "$$DB_NAME" OWNER "$$DB_USER";
         EOSQL
 
             # Ставим расширения
-            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$DB_NAME" <<-EOSQL
+            psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "$$DB_NAME" <<-EOSQL
                 CREATE EXTENSION IF NOT EXISTS vector;
                 CREATE EXTENSION IF NOT EXISTS pg_trgm;
                 CREATE EXTENSION IF NOT EXISTS unaccent;
                 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-                GRANT ALL ON SCHEMA public TO "$DB_USER";
+                GRANT ALL ON SCHEMA public TO "$$DB_USER";
         EOSQL
         done
         EOF
