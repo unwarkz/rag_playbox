@@ -1,11 +1,11 @@
 ###############################################################################
-#  docker-compose-postgres.yml — PostgreSQL 17 + pgvector
+#  docker-compose-postgres.yml — PostgreSQL 18 + pgvector
 #
 #  Usage:
 #    docker compose -f docker-compose-common.yml \
 #                   -f docker-compose-postgres.yml up -d
 #
-#  Base image: pgvector/pgvector:pg17 (custom build for locale support)
+#  Base image: pgvector/pgvector:pg18 (custom build for locale support)
 #  Extensions: pgvector, pg_trgm, unaccent, uuid-ossp (installed per-db)
 #  No external port mapping — access via rag-internal network only.
 ###############################################################################
@@ -31,12 +31,67 @@ services:
         max-file: ${LOG_MAX_FILE:-3}
 
     environment:
+      # --- PostgreSQL Server Configuration ---
       POSTGRES_USER: ${POSTGRES_USER:-ragadmin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-ragdb}
       POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS:---locale=ru_RU.UTF-8 --encoding=UTF8}
       TZ: ${TZ:-UTC}
       PGTZ: ${TZ:-UTC}
+
+      # --- LIBPQ Connection Environment Variables ---
+      # Connection Parameters
+      PGHOST: ${PGHOST:-localhost}
+      PGPORT: ${PGPORT:-5432}
+      PGDATABASE: ${PGDATABASE:-${POSTGRES_DB:-ragdb}}
+      PGUSER: ${PGUSER:-${POSTGRES_USER:-ragadmin}}
+      PGPASSWORD: ${PGPASSWORD:-}
+      PGPASSFILE: ${PGPASSFILE:-}
+      PGSERVICE: ${PGSERVICE:-}
+      PGSERVICEFILE: ${PGSERVICEFILE:-}
+      PGOPTIONS: ${PGOPTIONS:-}
+      PGAPPNAME: ${PGAPPNAME:-rag-postgres}
+      PGCONNECT_TIMEOUT: ${PGCONNECT_TIMEOUT:-10}
+
+      # Client Encoding & Session Behavior
+      PGCLIENTENCODING: ${PGCLIENTENCODING:-UTF8}
+      PGDATESTYLE: ${PGDATESTYLE:-ISO,MDY}
+      PGGEQO: ${PGGEQO:-on}
+
+      # SSL/TLS Configuration
+      PGSSLMODE: ${PGSSLMODE:-prefer}
+      PGSSLCOMPRESSION: ${PGSSLCOMPRESSION:-0}
+      PGSSLCERT: ${PGSSLCERT:-}
+      PGSSLKEY: ${PGSSLKEY:-}
+      PGSSLROOTCERT: ${PGSSLROOTCERT:-}
+      PGSSLCRL: ${PGSSLCRL:-}
+      PGSSLCRLDIR: ${PGSSLCRLDIR:-}
+      PGSSLSNI: ${PGSSLSNI:-1}
+      PGSSLNEGOTIATION: ${PGSSLNEGOTIATION:-postgres}
+      PGSSLMINPROTOCOLVERSION: ${PGSSLMINPROTOCOLVERSION:-TLSv1.2}
+      PGSSLMAXPROTOCOLVERSION: ${PGSSLMAXPROTOCOLVERSION:-}
+      PGSSLCERTMODE: ${PGSSLCERTMODE:-disable}
+      PGREQUIRESSL: ${PGREQUIRESSL:-0}
+
+      # GSS/Kerberos Configuration
+      PGGSSENCMODE: ${PGGSSENCMODE:-prefer}
+      PGKRBSRVNAME: ${PGKRBSRVNAME:-postgres}
+      PGGSSLIB: ${PGGSSLIB:-auto}
+      PGGSSDELEGATION: ${PGGSSDELEGATION:-0}
+
+      # Advanced Connection
+      PGTARGETSESSIONATTRS: ${PGTARGETSESSIONATTRS:-any}
+      PGLOADBALANCEHOSTS: ${PGLOADBALANCEHOSTS:-0}
+      PGMINPROTOCOLVERSION: ${PGMINPROTOCOLVERSION:-}
+      PGMAXPROTOCOLVERSION: ${PGMAXPROTOCOLVERSION:-}
+      PGCHANNELBINDING: ${PGCHANNELBINDING:-disable}
+      PGREQUIREAUTH: ${PGREQUIREAUTH:-}
+      PGREQUIREPEER: ${PGREQUIREPEER:-}
+
+      # System Configuration
+      PGLOCALEDIR: ${PGLOCALEDIR:-}
+      PGSYSCONFDIR: ${PGSYSCONFDIR:-}
+
       # Per-service DB users — passed to the init script
       RAGFLOW_DB_USER: ${RAGFLOW_DB_USER:-ragflow}
       RAGFLOW_DB_PASSWORD: ${RAGFLOW_DB_PASSWORD:-Ch4ng3me_R4gfl0w_db!}

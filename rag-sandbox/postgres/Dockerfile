@@ -1,4 +1,4 @@
-ARG PG_BASE=pgvector/pgvector:pg17
+ARG PG_BASE=pgvector/pgvector:pg18
 FROM ${PG_BASE}
 
 ARG POSTGRES_LOCALE=ru_RU.UTF-8
