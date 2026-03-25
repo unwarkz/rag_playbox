@@ -62,7 +62,7 @@ services:
       RAG_RERANKING_MODEL: ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
 
       # --- PostgreSQL connection (openwebui database) ---
-      DATABASE_URL: ${OPENWEBUI_DB_URL:-postgresql://${OPENWEBUI_DB_USER}:${OPENWEBUI_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_OPENWEBUI}}
+      #DATABASE_URL: ${OPENWEBUI_DB_URL:-postgresql://${OPENWEBUI_DB_USER}:${OPENWEBUI_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_OPENWEBUI}}
 
       # --- Authentication & security ---
       WEBUI_SECRET_KEY: ${OPENWEBUI_SECRET_KEY:-Ch4ng3me_0penWebUI!}
@@ -77,6 +77,11 @@ services:
 
       TZ: ${TZ:-UTC}
 
+      # DO NOT TRACK
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "true"
+      ANONYMIZED_TELEMETRY: "false"
+
     volumes:
       - openwebui-data:/app/backend/data
 
@@ -90,8 +95,8 @@ services:
     # WebUI: http://openwebui:8080
 
     depends_on:
-      postgres:
-        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
       qdrant:
         condition: service_healthy
       ollama:
