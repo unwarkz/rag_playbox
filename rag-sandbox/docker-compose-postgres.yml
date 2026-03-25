@@ -16,7 +16,7 @@
 
 services:
   postgres:
-    <<: *common
+#    <<: *common
     build:
       context: ./postgres
       dockerfile: Dockerfile
