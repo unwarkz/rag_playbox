@@ -21,7 +21,7 @@ services:
       context: ./postgres
       dockerfile: Dockerfile
       args:
-        PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg18}
+        PG_BASE: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
         POSTGRES_LOCALE: ${POSTGRES_LOCALE:-ru_RU.UTF-8}
     container_name: ${DOCKER_STACK_PREFIX}-postgres
     restart: ${RESTART_POLICY:-unless-stopped}
