@@ -132,52 +132,56 @@ services:
       - bash
       - -c
       - |
-        # Список сервисов для удобства
+        # Создаем .sh скрипт, который Postgres сам выполнит при ПЕРВОМ запуске
+        cat <<'EOF' > /docker-entrypoint-initdb.d/01-init-databases.sh
+        #!/usr/bin/env bash
+        set -e
+
+        # Список префиксов сервисов
         SERVICES="RAGFLOW DIFY OPENWEBUI LIGHTRAG MEM0 HINDSIGHT DIRECTUS NOCODB TEABLE LANGFUSE LITELLM"
-        EXTENSIONS="vector vectorscale pg_trgm unaccent \"uuid-ossp\""
 
-        {
-          echo "-- init.sql"
-          # Массив пар: ПРЕФИКС_ПЕРЕМЕННОЙ/ИМЯ_БАЗЫ_ПО_УМОЛЧАНИЮ
-          SERVICES="RAGFLOW/ragflow DIFY/dify OPENWEBUI/openwebui LIGHTRAG/lightrag MEM0/mem0 HINDSIGHT/hindsight DIRECTUS/directus NOCODB/nocodb TEABLE/teable LANGFUSE/langfuse LITELLM/litellm"
+        for S in $SERVICES; do
+            # Берем значения из окружения (они уже проброшены в контейнер)
+            USER_VAR="${S}_DB_USER"
+            PASS_VAR="${S}_DB_PASSWORD"
+            DB_ENV="POSTGRES_DB_${S}"
+            
+            # Динамическое получение значений
+            DB_USER=${!USER_VAR}
+            DB_PASS=${!PASS_VAR}
+            DB_NAME=${!DB_ENV:-${S,,}} # Если имя БД не задано, берем префикс в нижнем регистре
 
-          for s_info in $SERVICES; do
-            prefix="${s_info%%/*}"
-            default_db="${s_info##*/}"
+            echo "Initializing database: $DB_NAME for user: $DB_USER"
 
-            # Динамически получаем значения переменных окружения
-            user_val=$(eval echo "\${${prefix}_DB_USER}")
-            pass_val=$(eval echo "\${${prefix}_DB_PASSWORD}")
-            db_env_name="POSTGRES_DB_${prefix}"
-            db_val=$(eval echo "\${$db_env_name:-$default_db}")
+            # Выполняем SQL от имени суперпользователя
+            # %I и %L в format() идеально решают проблему ЛЮБЫХ кавычек в именах и паролях
+            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+                DO \$\$
+                BEGIN
+                    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
+                        EXECUTE format('CREATE USER %I WITH PASSWORD %L', '$DB_USER', '$DB_PASS');
+                    END IF;
+                END \$\$;
 
-            # Безопасное создание пользователя и базы через DO-блок и format()
-            # %I - для имен (идентификаторов), %L - для значений (паролей)
-            echo "DO \$\$ BEGIN 
-              IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$user_val') THEN
-                EXECUTE format('CREATE USER %I WITH PASSWORD %L', '$user_val', '$pass_val');
-              END IF;
-            END \$\$;"
+                IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
+                    EXECUTE format('CREATE DATABASE %I OWNER %I', '$DB_NAME', '$DB_USER');
+                END IF;
+        EOSQL
 
-            echo "SELECT 'CREATE DATABASE %I OWNER %I' FROM (SELECT 1) AS t 
-                  WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$db_val') 
-                  \gset
-                  \if :LAST_ERROR_OK
-                  \else
-                    SELECT format('CREATE DATABASE %I OWNER %I', '$db_val', '$user_val') \gexec
-                  \endif"
+            # Установка расширений в каждую базу
+            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$DB_NAME" <<-EOSQL
+                CREATE EXTENSION IF NOT EXISTS vectorscale CASCADE;
+                CREATE EXTENSION IF NOT EXISTS pg_trgm;
+                CREATE EXTENSION IF NOT EXISTS unaccent;
+                CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+                GRANT ALL ON SCHEMA public TO "$DB_USER";
+        EOSQL
+        done
+        EOF
 
-            # Переходим в базу и ставим расширения
-            echo "\\c \"$db_val\""
-            echo "CREATE EXTENSION IF NOT EXISTS vector;"
-            echo "CREATE EXTENSION IF NOT EXISTS vectorscale;"
-            echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
-            echo "CREATE EXTENSION IF NOT EXISTS unaccent;"
-            echo "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-            echo "GRANT ALL ON SCHEMA public TO \"$user_val\";"
-          done
-        } > /docker-entrypoint-initdb.d/init.sql
-
+        chmod +x /docker-entrypoint-initdb.d/01-init-databases.sh
+        
+        # Запускаем штатный входной узел
         exec docker-entrypoint.sh postgres
 
     networks:
