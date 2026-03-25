@@ -36,10 +36,10 @@ services:
 
     environment:
       # --- Master key for LiteLLM admin API ---
-      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-Ch4ng3me_L1teLLM_Master!}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-Ch4ng3me_L1teLLM_Master!}
 
       # --- PostgreSQL connection ---
-      LITELLM_DB_URL: ${LITELLM_DB_URL:-postgresql://litellm:Ch4ng3me_L1teLLM_db!@postgres:5432/litellm}
+      LITELLM_DB_URL: ${LITELLM_DB_URL:-postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-Ch4ng3me_L1teLLM_db!}@postgres:5432/${POSTGRES_DB_LITELLM}}
 
       # --- Redis cache credentials ---
       LITELLM_REDIS_USER: ${LITELLM_REDIS_USER:-litellm}
@@ -63,7 +63,7 @@ services:
       - bash
       - -c
       - |
-        cat > /app/config.yaml << 'LITELLM_CONFIG'
+        cat <<'EOF' > /app/config.yaml
         # =======================================================================
         # LiteLLM Proxy Configuration — RAG Sandbox
         # =======================================================================
@@ -82,8 +82,27 @@ services:
               api_base: http://ollama:11434
               stream: true
 
-          # --- Cloud models via OpenRouter ---
+          - model_name: minimax-m2.7
+            litellm_params:
+              model: openrouter/minimax/minimax-m2.7
+              api_base: http://ollama:11434
+              stream: true
+
+          - model_name: kimi-k2.5
+            litellm_params:
+              model: openrouter/moonshotai/kimi-k2.5            
+              api_base: http://ollama:11434
+              stream: true
+
           - model_name: nemotron-3-super
+            litellm_params:
+              model: openrouter/nvidia/nemotron-3-super
+              api_base: http://ollama:11434
+              stream: true
+
+
+          # --- Cloud models via OpenRouter ---
+          - model_name: nemotron-3-super-openrouter
             litellm_params:
               model: openrouter/nvidia/nemotron-3-super
               api_key: os.environ/OPENROUTER_API_KEY
@@ -98,10 +117,6 @@ services:
               model: openrouter/thudm/glm-5
               api_key: os.environ/OPENROUTER_API_KEY
 
-          - model_name: minimax-m2.7
-            litellm_params:
-              model: openrouter/minimax/minimax-m2.7
-              api_key: os.environ/OPENROUTER_API_KEY
 
           # --- Qwen cloud API (DashScope) ---
           - model_name: qwen3.5-cloud
@@ -111,17 +126,21 @@ services:
               api_key: os.environ/QWEN_API_KEY
 
           # --- Google Gemini ---
-          - model_name: gemini-2.5-flash
+          - model_name: gemini-3-flash
             litellm_params:
-              model: gemini/gemini-2.5-flash
+              model: gemini/gemini-3-flash
               api_key: os.environ/GEMINI_API_KEY
 
-          # --- Moonshot Kimi (direct API) ---
-          - model_name: kimi-direct
+          - model_name: gemini-3.1-flash-lite-preview
             litellm_params:
-              model: openai/moonshot-v1-auto
-              api_base: https://api.moonshot.cn/v1
-              api_key: os.environ/KIMI_API_KEY
+              model: gemini/gemini-3.1-flash-lite-preview
+              api_key: os.environ/GEMINI_API_KEY
+
+          - model_name: gemini-3.1-pro-preview
+            litellm_params:
+              model: gemini/gemini-3.1-pro-preview
+              api_key: os.environ/GEMINI_API_KEY                            
+
 
         litellm_settings:
           drop_params: true
@@ -142,7 +161,8 @@ services:
           database_url: os.environ/LITELLM_DB_URL
           alerting:
             - log
-        LITELLM_CONFIG
+        
+        EOF
 
         exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0
 

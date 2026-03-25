@@ -34,13 +34,13 @@ services:
 
     environment:
       # --- PostgreSQL connection via Prisma ---
-      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://teable:Ch4ng3me_T3able_db!@postgres:5432/teable}
+      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER:-teable}:${TEABLE_DB_PASSWORD:-Ch4ng3me_T3able_db!}@postgres:5432/${POSTGRES_DB_TEABLE}}
 
       # --- Application secret ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
 
       # --- Public URL (used for CORS / link generation) ---
-      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8028}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://teable:8028}
 
       # --- S3 storage via MinIO ---
       BACKEND_STORAGE_PROVIDER: ${TEABLE_STORAGE_PROVIDER:-minio}
@@ -53,7 +53,7 @@ services:
 
       # --- Redis (db:7 — per-service user auth) ---
       BACKEND_CACHE_PROVIDER: ${TEABLE_CACHE_PROVIDER:-redis}
-      BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://teable:Ch4ng3me_T3able_redis!@redis:6379/7}
+      BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://${TEABLE_REDIS_USER:-teable}:${TEABLE_REDIS_PASSWORD:-Ch4ng3me_T3able_redis!}@redis:6379/${TEABLE_REDIS_DB:-7}}
 
       # --- Mail settings (placeholder — configure for production) ---
       BACKEND_MAIL_HOST: ${SMTP_HOST:-}
