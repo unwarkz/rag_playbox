@@ -43,11 +43,11 @@ services:
 
       # --- LIBPQ Connection Environment Variables ---
       # Connection Parameters
-      PGHOST: ${PGHOST:-localhost}
-      PGPORT: ${PGPORT:-5432}
-      PGDATABASE: ${PGDATABASE:-${POSTGRES_DB:-ragdb}}
-      PGUSER: ${PGUSER:-${POSTGRES_USER:-ragadmin}}
-      PGPASSWORD: ${PGPASSWORD:-${POSTGRES_PASSWORD}}
+      # PGHOST: ${PGHOST:-localhost}
+      # PGPORT: ${PGPORT:-5432}
+      # PGDATABASE: ${PGDATABASE:-${POSTGRES_DB:-ragdb}}
+      # PGUSER: ${PGUSER:-${POSTGRES_USER:-ragadmin}}
+      # PGPASSWORD: ${PGPASSWORD:-${POSTGRES_PASSWORD}}
       # PGPASSFILE: ${PGPASSFILE:-}
       # PGSERVICE: ${PGSERVICE:-}
       # PGSERVICEFILE: ${PGSERVICEFILE:-}
@@ -57,7 +57,7 @@ services:
 
       # # Client Encoding & Session Behavior
       # PGCLIENTENCODING: ${PGCLIENTENCODING:-UTF8}
-      PGDATESTYLE: ${PGDATESTYLE:-ISO,MDY}
+      # PGDATESTYLE: ${PGDATESTYLE:-ISO,MDY}
       # PGGEQO: ${PGGEQO:-on}
 
       # # SSL/TLS Configuration
