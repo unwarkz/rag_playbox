@@ -13,13 +13,13 @@ include:
   #- docker-compose-embedding.yml
   #- docker-compose-reranker.yml
   - docker-compose-ollama.yml
-  - docker-compose-docling.yml
+  #- docker-compose-docling.yml
   - docker-compose-tika.yml
   - docker-compose-unstructured.yml
   # RAG and memory
   - docker-compose-lightrag.yml
   #- docker-compose-mem0.yml
-  - docker-compose-hindsight.yml
+  #- docker-compose-hindsight.yml
   # UI platforms
   #- docker-compose-ragflow.yml
   - docker-compose-dify.yml
@@ -27,11 +27,11 @@ include:
   - docker-compose-pipelines.yml
   - docker-compose-anythingllm.yml
   # Content management
-  - docker-compose-nocodb.yml
-  - docker-compose-directus.yml
+  #- docker-compose-nocodb.yml
+  #- docker-compose-directus.yml
   - docker-compose-teable.yml
   # Infrastructure
   #- docker-compose-npm.yml
   - docker-compose-litellm.yml
-  - docker-compose-langfuse.yml
+  #- docker-compose-langfuse.yml
   #- docker-compose-dbhub.yml
