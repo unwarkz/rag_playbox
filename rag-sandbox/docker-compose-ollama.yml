@@ -32,18 +32,48 @@ services:
         max-file: ${LOG_MAX_FILE:-3}
 
     environment:
-      # Bind to all interfaces inside the container
-      OLLAMA_HOST: "0.0.0.0"
-      # Allow cross-origin requests from any internal service
-      OLLAMA_ORIGINS: "*"
-      # Optional bearer-token authentication for the Ollama API
-      OLLAMA_API_TOKEN: ${OLLAMA_API_TOKEN:-}
-      # Concurrent request slots per loaded model
+      # Port & Host
+      OLLAMA_HOST: ${OLLAMA_HOST:-0.0.0.0:11434}
+      OLLAMA_ORIGINS: ${OLLAMA_ORIGINS:-*}
+
+      # Model Management
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-15m}
+      OLLAMA_LOAD_TIMEOUT: ${OLLAMA_LOAD_TIMEOUT:-5m}
+      OLLAMA_NOHISTORY: ${OLLAMA_NOHISTORY:-false}
+      OLLAMA_NOPRUNE: ${OLLAMA_NOPRUNE:-false}
+
+      # Performance & Scheduling
       OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-2}
-      # Maximum number of models kept in memory simultaneously
       OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-2}
-      # How long an idle model stays loaded before eviction
-      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      OLLAMA_MAX_QUEUE: ${OLLAMA_MAX_QUEUE:-}
+      OLLAMA_GPU_OVERHEAD: ${OLLAMA_GPU_OVERHEAD:-}
+      OLLAMA_SCHED_SPREAD: ${OLLAMA_SCHED_SPREAD:-false}
+
+      # Attention & Cache Optimization
+      OLLAMA_FLASH_ATTENTION: ${OLLAMA_FLASH_ATTENTION:-false}
+      OLLAMA_KV_CACHE_TYPE: ${OLLAMA_KV_CACHE_TYPE:-f16}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-}
+      OLLAMA_MULTIUSER_CACHE: ${OLLAMA_MULTIUSER_CACHE:-false}
+
+      # Inference Engine
+      OLLAMA_LLM_LIBRARY: ${OLLAMA_LLM_LIBRARY:-}
+      OLLAMA_NEW_ENGINE: ${OLLAMA_NEW_ENGINE:-false}
+
+      # Cloud & Remote
+      OLLAMA_NO_CLOUD: ${OLLAMA_NO_CLOUD:-false}
+      OLLAMA_REMOTES: ${OLLAMA_REMOTES:-}
+
+      # Debugging
+      OLLAMA_DEBUG: ${OLLAMA_DEBUG:-0}
+      OLLAMA_DEBUG_LOG_REQUESTS: ${OLLAMA_DEBUG_LOG_REQUESTS:-false}
+
+      # Interactive
+      OLLAMA_EDITOR: ${OLLAMA_EDITOR:-}
+
+      # Authentication
+      OLLAMA_API_TOKEN: ${OLLAMA_API_TOKEN:-}
+
+      # General
       TZ: ${TZ:-UTC}
 
     volumes:
