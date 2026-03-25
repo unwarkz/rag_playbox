@@ -132,56 +132,55 @@ services:
       - bash
       - -c
       - |
-        # Создаем .sh скрипт, который Postgres сам выполнит при ПЕРВОМ запуске
+        # Создаем скрипт инициализации. Используем $$$$ для экранирования в Compose
         cat <<'EOF' > /docker-entrypoint-initdb.d/01-init-databases.sh
         #!/usr/bin/env bash
         set -e
 
-        # Список префиксов сервисов
         SERVICES="RAGFLOW DIFY OPENWEBUI LIGHTRAG MEM0 HINDSIGHT DIRECTUS NOCODB TEABLE LANGFUSE LITELLM"
 
-        for S in $SERVICES; do
-            # Берем значения из окружения (они уже проброшены в контейнер)
-            USER_VAR="${S}_DB_USER"
-            PASS_VAR="${S}_DB_PASSWORD"
-            DB_ENV="POSTGRES_DB_${S}"
+        for S in $$SERVICES; do
+            USER_VAR="$${S}_DB_USER"
+            PASS_VAR="$${S}_DB_PASSWORD"
+            DB_ENV="POSTGRES_DB_$${S}"
             
-            # Динамическое получение значений
-            DB_USER=${!USER_VAR}
-            DB_PASS=${!PASS_VAR}
-            DB_NAME=${!DB_ENV:-${S,,}} # Если имя БД не задано, берем префикс в нижнем регистре
+            # Косвенная ссылка на переменную
+            DB_USER=$${!USER_VAR}
+            DB_PASS=$${!PASS_VAR}
+            DB_NAME=$${!DB_ENV:-$${S,,}}
 
-            echo "Initializing database: $DB_NAME for user: $DB_USER"
+            echo "Initializing database: $$DB_NAME for user: $$DB_USER"
 
-            # Выполняем SQL от имени суперпользователя
-            # %I и %L в format() идеально решают проблему ЛЮБЫХ кавычек в именах и паролях
-            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
-                DO \$\$
+            # Создаем пользователя и БД
+            psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+                DO \$\$\$
                 BEGIN
-                    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
-                        EXECUTE format('CREATE USER %I WITH PASSWORD %L', '$DB_USER', '$DB_PASS');
+                    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$$DB_USER') THEN
+                        EXECUTE format('CREATE USER %I WITH PASSWORD %L', '$$DB_USER', '$$DB_PASS');
                     END IF;
-                END \$\$;
+                END \$\$\$;
 
-                IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
-                    EXECUTE format('CREATE DATABASE %I OWNER %I', '$DB_NAME', '$DB_USER');
-                END IF;
+                DO \$\$\$
+                BEGIN
+                    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$$DB_NAME') THEN
+                        EXECUTE format('CREATE DATABASE %I OWNER %I', '$$DB_NAME', '$$DB_USER');
+                    END IF;
+                END \$\$\$;
         EOSQL
 
-            # Установка расширений в каждую базу
-            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$DB_NAME" <<-EOSQL
-                CREATE EXTENSION IF NOT EXISTS vectorscale CASCADE;
+            # Ставим расширения
+            psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname "$$DB_NAME" <<-EOSQL
+                CREATE EXTENSION IF NOT EXISTS vector;
                 CREATE EXTENSION IF NOT EXISTS pg_trgm;
                 CREATE EXTENSION IF NOT EXISTS unaccent;
                 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-                GRANT ALL ON SCHEMA public TO "$DB_USER";
+                GRANT ALL ON SCHEMA public TO "$$DB_USER";
         EOSQL
         done
         EOF
 
+
         chmod +x /docker-entrypoint-initdb.d/01-init-databases.sh
-        
-        # Запускаем штатный входной узел
         exec docker-entrypoint.sh postgres
 
     networks:
