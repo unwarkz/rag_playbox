@@ -37,7 +37,7 @@ services:
       TEABLE_DB_USER: ${TEABLE_DB_USER:-teable}
       TEABLE_DB_PASSWORD: ${TEABLE_DB_PASSWORD:-Ch4ng3me_T3able_db!}
       POSTGRES_DB_TEABLE: ${POSTGRES_DB_TEABLE:-teable}      
-      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER:-teable}:${TEABLE_DB_PASSWORD:-Ch4ng3me_T3able_db!}@postgres:5432/${POSTGRES_DB_TEABLE:-teable}}
+      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://"${TEABLE_DB_USER}":"${TEABLE_DB_PASSWORD}"@postgres:5432/"${POSTGRES_DB_TEABLE}"}
 
       # --- Application secret ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
