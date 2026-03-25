@@ -42,7 +42,7 @@ services:
       LITELLM_DB_USER: ${LITELLM_DB_USER:-litellm}
       LITELLM_DB_PASSWORD: ${LITELLM_DB_PASSWORD:-Ch4ng3me_L1teLLM_db!}
       POSTGRES_DB_LITELLM: ${POSTGRES_DB_LITELLM:-litellm}      
-      LITELLM_DB_URL: ${LITELLM_DB_URL:-"postgresql://${LITELLM_DB_USER}:${LITELLM_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_LITELLM}"}
+      LITELLM_DB_URL: ${LITELLM_DB_URL:-postgresql://${LITELLM_DB_USER}:${LITELLM_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_LITELLM}}
 
       # --- Redis cache credentials ---
       LITELLM_REDIS_USER: ${LITELLM_REDIS_USER:-litellm}
