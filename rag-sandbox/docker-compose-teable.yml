@@ -113,5 +113,5 @@ services:
       retries: 5
       start_period: 45s
 
-    cpus: ${TEABLE_CPU_LIMIT:-1}
-    mem_limit: ${TEABLE_MEM_LIMIT:-1024m}
+    cpus: ${TEABLE_CPU_LIMIT:-2}
+    mem_limit: ${TEABLE_MEM_LIMIT:-4024m}
