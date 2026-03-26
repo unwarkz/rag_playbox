@@ -21,6 +21,22 @@
 # =============================================================================
 
 services:
+  createbuckets:
+    image: pgsty/mc
+    networks:
+      - rag-internal
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb minio/${MINIO_DEFAULT_BUCKET:-public};
+      /usr/bin/mc anonymous set public minio/${MINIO_DEFAULT_BUCKET:-public};
+      /usr/bin/mc mb minio/${MINIO_PRIVATE_BUCKET:-private};
+      exit 0;
+      "
+    depends_on:
+      minio:
+        condition: service_healthy
+
   teable:
     image: ${TEABLE_IMAGE:-ghcr.io/teableio/teable:latest}
     container_name: ${DOCKER_STACK_PREFIX}-teable
@@ -35,7 +51,7 @@ services:
     environment:
       # --- PostgreSQL connection via Prisma ---
    
-      PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER}:${TEABLE_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_TEABLE}}
+      PRISMA_DATABASE_URL: postgresql://${TEABLE_DB_USER}:${TEABLE_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_TEABLE}
 
       # --- Application secret ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
@@ -47,9 +63,10 @@ services:
       BACKEND_STORAGE_PROVIDER: ${TEABLE_STORAGE_PROVIDER:-minio}
       BACKEND_STORAGE_MINIO_ENDPOINT: minio
       BACKEND_STORAGE_MINIO_PORT: ${MINIO_API_PORT:-9000}
-      BACKEND_STORAGE_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      BACKEND_STORAGE_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
-      BACKEND_STORAGE_MINIO_BUCKET: ${MINIO_DEFAULT_BUCKET:-rag-documents}
+      BACKEND_STORAGE_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER?error: MINIO_ROOT_USER is required}
+      BACKEND_STORAGE_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD?error: MINIO_ROOT_PASSWORD is required}
+      BACKEND_STORAGE_MINIO_PUBLIC_BUCKET: ${MINIO_DEFAULT_BUCKET:-public}
+      BACKEND_STORAGE_MINIO_PRIVATE_BUCKET: ${MINIO_PRIVATE_BUCKET:-private}
       BACKEND_STORAGE_MINIO_USE_SSL: "${TEABLE_STORAGE_MINIO_USE_SSL:-false}"
 
       # --- Redis (db:7 — per-service user auth) ---
