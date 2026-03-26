@@ -29,7 +29,6 @@
       interval: 10s
       timeout: 10s
       retries: 120
-    restart: unless-stopped
     entrypoint:
       - bash
       - -c
