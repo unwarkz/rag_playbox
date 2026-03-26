@@ -203,8 +203,8 @@ services:
       retries: 3
       start_period: 10s
 
-    cpus: ${DIFY_SANDBOX_CPU_LIMIT:-0.5}
-    mem_limit: ${DIFY_SANDBOX_MEM_LIMIT:-256m}
+    cpus: ${DIFY_SANDBOX_CPU_LIMIT:-1}
+    mem_limit: ${DIFY_SANDBOX_MEM_LIMIT:-1000m}
 
   # ---------------------------------------------------------------------------
   # dify-web — Next.js frontend
@@ -249,5 +249,5 @@ services:
     #   retries: 5
     #   start_period: 20s
 
-    cpus: ${DIFY_WEB_CPU_LIMIT:-0.5}
-    mem_limit: ${DIFY_WEB_MEM_LIMIT:-256m}
+    cpus: ${DIFY_WEB_CPU_LIMIT:-1}
+    mem_limit: ${DIFY_WEB_MEM_LIMIT:-1000m}

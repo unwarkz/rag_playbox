@@ -71,7 +71,7 @@ services:
       OLLAMA_EDITOR: ${OLLAMA_EDITOR:-}
 
       # Authentication
-      OLLAMA_API_TOKEN: ${OLLAMA_API_TOKEN:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
 
       # General
       TZ: ${TZ:-UTC}

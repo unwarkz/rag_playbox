@@ -33,11 +33,11 @@ services:
 
     environment:
       # --- PostgreSQL connection (nocodb database) ---
-      NC_DB: ${NC_DB:-pg://postgres:5432?u=nocodb&p=Ch4ng3me_N0c0DB_db!&d=nocodb}
+      NC_DB: ${NC_DB:-pg://postgres:5432?u=${NOCODB_DB_USER:-nocodb}&p=${NOCODB_DB_PASSWORD:-Ch4ng3me_N0c0DB_db!}&d=${POSTGRES_DB_NOCODB:-nocodb}}
       # --- Authentication ---
       NC_AUTH_JWT_SECRET: ${NC_AUTH_JWT_SECRET:-Ch4ng3me_N0coDB_JWT!}
       # --- Redis cache (db:6) ---
-      NC_REDIS_URL: ${NC_REDIS_URL:-redis://nocodb:Ch4ng3me_N0c0DB_redis!@redis:6379/6}
+      NC_REDIS_URL: ${NC_REDIS_URL:-redis://${NOCODB_REDIS_USER:-nocodb}:${NOCODB_REDIS_PASSWORD:-Ch4ng3me_N0c0DB_redis!}@redis:6379/${NOCODB_REDIS_DB:-5}}
       # --- Disable telemetry ---
       NC_DISABLE_TELE: "${NC_DISABLE_TELE:-true}"
       TZ: ${TZ:-UTC}
@@ -72,4 +72,4 @@ services:
       start_period: 30s
 
     cpus: ${NOCODB_CPU_LIMIT:-2}
-    mem_limit: ${NOCODB_MEM_LIMIT:-4000m}
+    mem_limit: ${NOCODB_MEM_LIMIT:-2000m}

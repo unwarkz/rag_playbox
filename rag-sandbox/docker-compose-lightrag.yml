@@ -124,4 +124,4 @@ services:
       start_period: 30s
 
     cpus: ${LIGHTRAG_CPU_LIMIT:-1.0}
-    mem_limit: ${LIGHTRAG_MEM_LIMIT:-512m}
+    mem_limit: ${LIGHTRAG_MEM_LIMIT:-1000m}

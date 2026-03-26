@@ -150,4 +150,4 @@ services:
       start_period: 60s
 
     cpus: ${RAGFLOW_CPU_LIMIT:-2.0}
-    mem_limit: ${RAGFLOW_MEM_LIMIT:-1536m}
+    mem_limit: ${RAGFLOW_MEM_LIMIT:-2000m}
