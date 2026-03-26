@@ -53,6 +53,7 @@ volumes:
   neo4j-plugins:
   minio-data:
   infinity-data:
+  mysql_data:
 
   # --- AI / ML layer ---
   models-cache:
