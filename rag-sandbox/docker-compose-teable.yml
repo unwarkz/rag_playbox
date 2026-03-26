@@ -12,8 +12,9 @@
 #  No external port mapping — access via rag-frontend + NPM only.
 #  Storage backends:
 #    Metadata  → PostgreSQL (teable database, via Prisma)
-#    Cache     → Redis
-#    Files     → MinIO (S3-compatible)
+#    Cache     → Redis (db:7)
+#    Files     → MinIO (S3-compatible) — teable-public + teable-private buckets
+#               NOTE: both buckets must be pre-created in MinIO before starting
 ###############################################################################
 
 # =============================================================================
@@ -34,39 +35,51 @@ services:
 
     environment:
       # --- PostgreSQL connection via Prisma ---
-   
       PRISMA_DATABASE_URL: ${TEABLE_DB_URL:-postgresql://${TEABLE_DB_USER}:${TEABLE_DB_PASSWORD}@postgres:5432/${POSTGRES_DB_TEABLE}}
 
-      # --- Application secret ---
+      # --- Application ---
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
+      # PUBLIC_ORIGIN must be set to the externally accessible Teable URL
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:3000}
+      NEXT_ENV_IMAGES_ALL_REMOTE: "${NEXT_ENV_IMAGES_ALL_REMOTE:-true}"
 
-      # --- Public URL (used for CORS / link generation) ---
-      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://teable:8028}
-
-      # --- S3 storage via MinIO ---
-      BACKEND_STORAGE_PROVIDER: ${TEABLE_STORAGE_PROVIDER:-minio}
-      BACKEND_STORAGE_MINIO_ENDPOINT: minio
-      BACKEND_STORAGE_MINIO_PORT: ${MINIO_API_PORT:-9000}
-      BACKEND_STORAGE_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      BACKEND_STORAGE_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
-      BACKEND_STORAGE_MINIO_BUCKET: ${MINIO_DEFAULT_BUCKET:-rag-documents}
-      BACKEND_STORAGE_MINIO_USE_SSL: "${TEABLE_STORAGE_MINIO_USE_SSL:-false}"
-
-      # --- Redis (db:7 — per-service user auth) ---
+      # --- Redis cache (db:7 — per-service ACL user) ---
       BACKEND_CACHE_PROVIDER: ${TEABLE_CACHE_PROVIDER:-redis}
       BACKEND_CACHE_REDIS_URI: ${TEABLE_REDIS_URI:-redis://${TEABLE_REDIS_USER}:${TEABLE_REDIS_PASSWORD}@redis:6379/${TEABLE_REDIS_DB:-7}}
 
-      # --- Mail settings (placeholder — configure for production) ---
+      # --- MinIO S3-compatible object storage ---
+      # NOTE: teable-public (with public read policy) and teable-private
+      #       buckets must be pre-created in MinIO before starting Teable.
+      BACKEND_STORAGE_PROVIDER: ${TEABLE_STORAGE_PROVIDER:-minio}
+      BACKEND_STORAGE_PUBLIC_BUCKET: ${TEABLE_PUBLIC_BUCKET:-teable-public}
+      BACKEND_STORAGE_PRIVATE_BUCKET: ${TEABLE_PRIVATE_BUCKET:-teable-private}
+      # Internal endpoint: used by the Teable backend for server-side API calls
+      BACKEND_STORAGE_MINIO_INTERNAL_ENDPOINT: ${TEABLE_MINIO_INTERNAL_ENDPOINT:-minio}
+      BACKEND_STORAGE_MINIO_INTERNAL_PORT: "${MINIO_API_PORT:-9000}"
+      # Public endpoint: used to construct browser-accessible file URLs
+      # Set TEABLE_MINIO_ENDPOINT to your server's IP or domain for production
+      BACKEND_STORAGE_MINIO_ENDPOINT: ${TEABLE_MINIO_ENDPOINT:-minio}
+      BACKEND_STORAGE_MINIO_PORT: "${MINIO_API_PORT:-9000}"
+      BACKEND_STORAGE_MINIO_USE_SSL: "${TEABLE_STORAGE_MINIO_USE_SSL:-false}"
+      BACKEND_STORAGE_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      BACKEND_STORAGE_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-Ch4ng3me_Min10!}
+      # STORAGE_PREFIX is the base URL embedded in generated file links —
+      # must be publicly reachable from browsers; set TEABLE_STORAGE_PREFIX
+      STORAGE_PREFIX: ${TEABLE_STORAGE_PREFIX:-http://localhost:9000}
+
+      # --- External database proxy (optional — exposes Teable DB to external clients) ---
+      # PUBLIC_DATABASE_PROXY: ${PUBLIC_DATABASE_PROXY:-}
+
+      # --- Mail (deprecated — configure via Admin Panel > Settings instead) ---
       BACKEND_MAIL_HOST: ${SMTP_HOST:-}
       BACKEND_MAIL_PORT: "${SMTP_PORT:-587}"
-      BACKEND_MAIL_SECURE: "${SMTP_SECURE:-false}"
-      BACKEND_MAIL_SENDER: ${SMTP_FROM:-}
-      BACKEND_MAIL_SENDER_NAME: ${TEABLE_MAIL_SENDER_NAME:-Teable}
+      BACKEND_MAIL_AUTH_USER: ${SMTP_USERNAME:-}
+      BACKEND_MAIL_AUTH_PASS: ${SMTP_PASSWORD:-}
 
       TZ: ${TZ:-UTC}
 
     volumes:
-      - teable-data:/app/.cache
+      - teable-data:/app/.assets
 
     networks:
       # Internal: reaches postgres, redis, minio
