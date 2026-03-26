@@ -24,11 +24,11 @@ include:
   #- docker-compose-ragflow.yml
   - docker-compose-dify.yml
   - docker-compose-openwebui.yml
-  #- docker-compose-pipelines.yml
-  #- docker-compose-anythingllm.yml
+  - docker-compose-pipelines.yml
+  - docker-compose-anythingllm.yml
   # Content management
-  #- docker-compose-nocodb.yml
-  #- docker-compose-directus.yml
+  - docker-compose-nocodb.yml
+  - docker-compose-directus.yml
   - docker-compose-teable.yml
   # Infrastructure
   #- docker-compose-npm.yml
