@@ -24,7 +24,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - ragflow
+      - rag-internal
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-uroot", "-p${MYSQL_PASSWORD}"]
       interval: 10s
