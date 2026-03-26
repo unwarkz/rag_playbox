@@ -67,7 +67,7 @@ services:
       POSTGRES_DATABASE: ${POSTGRES_DB_LIGHTRAG:-lightrag}
 
       # --- Redis (db 3 — avoids conflicts with Dify db:1/2) ---
-      REDIS_URI: ${LIGHTRAG_REDIS_URI:-redis://lightrag:Ch4ng3me_L1ghtRAG_redis!@redis:6379/3}
+      REDIS_URI: ${LIGHTRAG_REDIS_URI:-redis://${LIGHTRAG_REDIS_USER:-lightrag}:${LIGHTRAG_REDIS_PASSWORD:-Ch4ng3me_L1ghtRAG_redis!}@redis:6379/${LIGHTRAG_REDIS_DB:-3}}
 
       # --- Qdrant vector database ---
       QDRANT_URL: http://qdrant:${QDRANT_REST_PORT:-6333}

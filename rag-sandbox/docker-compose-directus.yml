@@ -48,7 +48,7 @@ services:
       # --- Cache via Redis (db:4) ---
       CACHE_ENABLED: ${DIRECTUS_CACHE_ENABLED:-true}
       CACHE_STORE: ${DIRECTUS_CACHE_STORE:-redis}
-      REDIS: ${DIRECTUS_REDIS:-redis://directus:Ch4ng3me_D1rectus_redis!@redis:6379/4}
+      REDIS: redis://${DIRECTUS_REDIS_USER:-directus}:${DIRECTUS_REDIS_PASSWORD:-Ch4ng3me_D1rectus_redis!}@redis:6379/${DIRECTUS_REDIS_DB:-4}
 
       # --- S3 file storage via MinIO ---
       STORAGE_LOCATIONS: ${DIRECTUS_STORAGE_LOCATIONS:-s3}
