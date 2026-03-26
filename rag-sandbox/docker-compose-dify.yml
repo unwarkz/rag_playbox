@@ -238,16 +238,16 @@ services:
       dify-api:
         condition: service_healthy
 
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -sf http://localhost:3000/ || exit 1",
-        ]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD-SHELL",
+    #       "curl -sf http://localhost:3000/ || exit 1",
+    #     ]
+    #   interval: 15s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 20s
 
     cpus: ${DIFY_WEB_CPU_LIMIT:-0.5}
     mem_limit: ${DIFY_WEB_MEM_LIMIT:-256m}

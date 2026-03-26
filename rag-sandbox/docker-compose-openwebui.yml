@@ -41,7 +41,7 @@ services:
     environment:
       # --- Ollama backend ---
       OLLAMA_BASE_URL: ${OPENWEBUI_OLLAMA_BASE_URL:-http://ollama:11434}
-      OLLAMA_API_KEY: ${OLLAMA_API_TOKEN:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
 
       # --- OpenAI-compatible endpoints (e.g. LiteLLM, external providers) ---
       OPENAI_API_BASE_URLS: ${OPENWEBUI_OPENAI_API_BASE_URLS:-}
@@ -50,7 +50,7 @@ services:
       # --- Vector database (Qdrant) ---
       VECTOR_DB: ${OPENWEBUI_VECTOR_DB:-qdrant}
       QDRANT_URI: http://qdrant:${QDRANT_REST_PORT:-6333}
-      QDRANT_API_KEY: ${QDRANT_API_KEY:-Ch4ng3me_Qdr4nt!}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
 
       # --- RAG embedding engine (Infinity via OpenAI-compatible API) ---
       #RAG_EMBEDDING_ENGINE: ${OPENWEBUI_RAG_EMBEDDING_ENGINE:-openai}
