@@ -203,18 +203,30 @@ ${CADDY_HOST}:${CADDY_PORT_RERANKER} {
 
 # ---------------------------------------------------------------------------
 # Ollama LLM server — port ${CADDY_PORT_OLLAMA} → ${DOCKER_STACK_PREFIX}-ollama:${OLLAMA_PORT}
+#
+# If OLLAMA_BEARER_TOKEN is set in caddy.env the proxy enforces:
+#   Authorization: Bearer <token>
+# Internal service-to-service calls on ollama:11434 are never checked.
 # ---------------------------------------------------------------------------
 ${CADDY_HOST}:${CADDY_PORT_OLLAMA} {
     ${CADDY_TLS_DIRECTIVE}
+    ${CADDY_OLLAMA_AUTH_MATCHER}
+    ${CADDY_OLLAMA_AUTH_RESPOND}
     reverse_proxy ${DOCKER_STACK_PREFIX}-ollama:${OLLAMA_PORT}
 }
 
 # ---------------------------------------------------------------------------
 # Qdrant REST API — port ${CADDY_PORT_QDRANT_REST} → ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_REST_PORT}
+#
+# If QDRANT_API_KEY is set in caddy.env Caddy injects the key as an
+# Authorization: Bearer header on every upstream request, so the
+# /dashboard opens without prompting the user to enter the key manually.
 # ---------------------------------------------------------------------------
 ${CADDY_HOST}:${CADDY_PORT_QDRANT_REST} {
     ${CADDY_TLS_DIRECTIVE}
-    reverse_proxy ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_REST_PORT}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_REST_PORT} {
+        ${CADDY_QDRANT_AUTH_HEADER}
+    }
 }
 
 # ---------------------------------------------------------------------------

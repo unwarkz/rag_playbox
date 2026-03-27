@@ -89,6 +89,11 @@ services:
       MINIO_API_PORT:             ${MINIO_API_PORT:-9000}
       MINIO_CONSOLE_PORT:         ${MINIO_CONSOLE_PORT:-9001}
 
+      # --- Service-level auth tokens (used by the auth logic in docker-entrypoint.sh) ---
+      # Set in env/caddy.env (mirrored from env/ollama.env and env/qdrant.env)
+      OLLAMA_BEARER_TOKEN:        ${OLLAMA_BEARER_TOKEN:-}
+      QDRANT_API_KEY:             ${QDRANT_API_KEY:-}
+
     volumes:
       - ./configs/caddy/Caddyfile.tmpl:/etc/caddy/Caddyfile.tmpl:ro
       - caddy-data:/data

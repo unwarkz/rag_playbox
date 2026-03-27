@@ -7,6 +7,17 @@
 #    auto     — Let's Encrypt ACME (requires CADDY_HOST + CADDY_EMAIL)
 #    internal — Caddy internal CA, self-signed (good for local HTTPS testing)
 #
+#  Reads OLLAMA_BEARER_TOKEN from the environment:
+#    (empty)  — Ollama proxy port (8036) is open, no authentication required
+#    <token>  — Caddy enforces  Authorization: Bearer <token>  on port 8036
+#               Internal service calls to ollama:11434 are never affected.
+#
+#  Reads QDRANT_API_KEY from the environment:
+#    (empty)  — Qdrant proxy port (8039) forwards requests as-is
+#    <key>    — Caddy injects  Authorization: Bearer <key>  on every upstream
+#               request to Qdrant, so the /dashboard opens without prompting
+#               the user to enter the key manually.
+#
 #  Renders /etc/caddy/Caddyfile.tmpl → /etc/caddy/Caddyfile via envsubst,
 #  then execs caddy.
 ###############################################################################
@@ -47,6 +58,34 @@ else
 fi
 
 export CADDY_EMAIL_DIRECTIVE
+
+# ---------------------------------------------------------------------------
+# Ollama bearer-token auth (proxy port only; internal port 11434 unchanged)
+# When OLLAMA_BEARER_TOKEN is set, Caddy returns 401 for any request that
+# does not include  Authorization: Bearer <token>.
+# ---------------------------------------------------------------------------
+if [ -n "${OLLAMA_BEARER_TOKEN:-}" ]; then
+    CADDY_OLLAMA_AUTH_MATCHER="@ollama_unauth not header Authorization \"Bearer ${OLLAMA_BEARER_TOKEN}\""
+    CADDY_OLLAMA_AUTH_RESPOND="respond @ollama_unauth 401"
+else
+    CADDY_OLLAMA_AUTH_MATCHER=""
+    CADDY_OLLAMA_AUTH_RESPOND=""
+fi
+
+export CADDY_OLLAMA_AUTH_MATCHER CADDY_OLLAMA_AUTH_RESPOND
+
+# ---------------------------------------------------------------------------
+# Qdrant API key header injection
+# When QDRANT_API_KEY is set, Caddy adds  Authorization: Bearer <key>  to
+# every upstream request so the /dashboard opens without a manual key entry.
+# ---------------------------------------------------------------------------
+if [ -n "${QDRANT_API_KEY:-}" ]; then
+    CADDY_QDRANT_AUTH_HEADER="header_up Authorization \"Bearer ${QDRANT_API_KEY}\""
+else
+    CADDY_QDRANT_AUTH_HEADER=""
+fi
+
+export CADDY_QDRANT_AUTH_HEADER
 
 # ---------------------------------------------------------------------------
 # Render template
