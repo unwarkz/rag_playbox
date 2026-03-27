@@ -29,7 +29,8 @@ services:
 
     environment:
       # API key protects both REST and gRPC endpoints
-      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT__SERVICE__API_KEY: ""
+      #${QDRANT_API_KEY:-}
       # Disable the built-in web dashboard (not needed behind NPM)
       QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "${QDRANT_STATIC_CONTENT:-false}"
       QDRANT__LOG_LEVEL: ${LOG_LEVEL:-INFO}

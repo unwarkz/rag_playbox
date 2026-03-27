@@ -57,7 +57,7 @@ services:
       SECRET_KEY: ${TEABLE_SECRET_KEY:-Ch4ng3me_T3able_Secret!}
 
       # --- Public URL (used for CORS / link generation) ---
-      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://teable:8028}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://teable:3000}
 
       # --- S3 storage via MinIO ---
       BACKEND_STORAGE_PROVIDER: ${TEABLE_STORAGE_PROVIDER:-minio}

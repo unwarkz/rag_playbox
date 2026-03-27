@@ -15,6 +15,53 @@
 # =============================================================================
 
 services:
+  omnidb:
+    image: ${OMNIDB_IMAGE:-taivokasper/omnidb:latest}
+    container_name: ${DOCKER_STACK_PREFIX}-omnidb
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+#    environment:
+      # --- OmniDB Configuration ---
+      # OMNIDB_USER: ${OMNIDB_USER:-omnidb}
+      # OMNIDB_PASSWORD: ${OMNIDB_PASSWORD:-Ch4ng3me_Omn1DB_db!}
+      # OMNIDB_PORT: ${OMNIDB_PORT:-8000}
+      # OMNIDB_HOST: ${OMNIDB_HOST:-postgres}
+      # OMNIDB_DB: ${OMNIDB_DB:-omnidb}
+    networks:
+      - rag-internal
+    # No external port mapping — access via rag-internal
+    volumes:
+      - omnidb-data:/var/lib/omnidb
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  adminer:
+    image: ${ADMINER_IMAGE:-adminer:latest}
+    container_name: ${DOCKER_STACK_PREFIX}-adminer
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rag-internal
+    # No external port mapping — access via rag-internal
+    # WebUI: http://adminer:8080
+    
+
+
   postgres:
 #    <<: *common
     build:
