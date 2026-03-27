@@ -1,0 +1,242 @@
+###############################################################################
+#  Caddyfile.tmpl — RAG Sandbox Caddy reverse proxy (template)
+#
+#  This file is rendered at container start by docker-entrypoint.sh using
+#  envsubst.  Do NOT use Caddy's own {$VAR} placeholders here — all
+#  substitutions are handled by envsubst via ${VAR} syntax.
+#
+#  Default mode  (CADDY_HOST="", CADDY_TLS_MODE=off):
+#    Every site listens on :{PORT} — plain HTTP, any incoming address.
+#
+#  Hostname + Let's Encrypt  (CADDY_HOST=example.com, CADDY_TLS_MODE=auto,
+#                              CADDY_EMAIL=admin@example.com):
+#    Every site listens on example.com:{PORT} — HTTPS via Let's Encrypt.
+#    ⚠ Requires port 80 reachable from the internet (HTTP-01 ACME challenge).
+#       If Nginx Proxy Manager already occupies port 80, use DNS-01 challenge
+#       or CADDY_TLS_MODE=internal for local self-signed certificates.
+#
+#  TCP services (PostgreSQL, Redis, Qdrant gRPC, Neo4j Bolt):
+#    Always bind to all interfaces on their port, regardless of CADDY_HOST.
+#    They use Caddy's layer4 module for raw-TCP proxying.
+###############################################################################
+
+# =============================================================================
+# GLOBAL OPTIONS
+# =============================================================================
+{
+    ${CADDY_AUTO_HTTPS_DIRECTIVE}
+    ${CADDY_EMAIL_DIRECTIVE}
+
+    # -------------------------------------------------------------------------
+    # TCP layer4 routes (raw TCP — PostgreSQL, Redis, Qdrant gRPC, Neo4j Bolt)
+    # Always bind port-only (all interfaces) — no hostname matching for TCP.
+    # -------------------------------------------------------------------------
+    layer4 {
+
+        # PostgreSQL — dev access (${CADDY_PORT_POSTGRES} → ${DOCKER_STACK_PREFIX}-postgres:${POSTGRES_PORT})
+        :${CADDY_PORT_POSTGRES} {
+            route {
+                proxy {
+                    upstream ${DOCKER_STACK_PREFIX}-postgres:${POSTGRES_PORT}
+                }
+            }
+        }
+
+        # Redis / Valkey — dev access (${CADDY_PORT_REDIS} → ${DOCKER_STACK_PREFIX}-redis:${REDIS_PORT})
+        :${CADDY_PORT_REDIS} {
+            route {
+                proxy {
+                    upstream ${DOCKER_STACK_PREFIX}-redis:${REDIS_PORT}
+                }
+            }
+        }
+
+        # Qdrant gRPC (${CADDY_PORT_QDRANT_GRPC} → ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_GRPC_PORT})
+        :${CADDY_PORT_QDRANT_GRPC} {
+            route {
+                proxy {
+                    upstream ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_GRPC_PORT}
+                }
+            }
+        }
+
+        # Neo4j Bolt driver protocol (${CADDY_PORT_NEO4J_BOLT} → ${DOCKER_STACK_PREFIX}-neo4j:${NEO4J_BOLT_PORT})
+        :${CADDY_PORT_NEO4J_BOLT} {
+            route {
+                proxy {
+                    upstream ${DOCKER_STACK_PREFIX}-neo4j:${NEO4J_BOLT_PORT}
+                }
+            }
+        }
+
+    }
+}
+
+# =============================================================================
+# HTTP REVERSE PROXY ROUTES
+#
+# Site address: "${CADDY_HOST}:{PORT}"
+#   CADDY_HOST="" (default) → :{PORT}   plain HTTP, any hostname/IP
+#   CADDY_HOST=example.com  → example.com:{PORT}  TLS if CADDY_TLS_MODE=auto
+# =============================================================================
+
+
+# ---------------------------------------------------------------------------
+# RAGFlow Web UI — port ${CADDY_PORT_RAGFLOW_WEB} → ${DOCKER_STACK_PREFIX}-ragflow:${RAGFLOW_HTTP_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_RAGFLOW_WEB} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-ragflow:${RAGFLOW_HTTP_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# RAGFlow REST API — port ${CADDY_PORT_RAGFLOW_API} → ${DOCKER_STACK_PREFIX}-ragflow:${RAGFLOW_HTTP_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_RAGFLOW_API} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-ragflow:${RAGFLOW_HTTP_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Dify LLM workflow builder — port ${CADDY_PORT_DIFY} → ${DOCKER_STACK_PREFIX}-dify-web:3000
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_DIFY} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-dify-web:3000
+}
+
+# ---------------------------------------------------------------------------
+# Open WebUI chat interface — port ${CADDY_PORT_OPENWEBUI} → ${DOCKER_STACK_PREFIX}-openwebui:8080
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_OPENWEBUI} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-openwebui:8080
+}
+
+# ---------------------------------------------------------------------------
+# AnythingLLM document workspace — port ${CADDY_PORT_ANYTHINGLLM} → ${DOCKER_STACK_PREFIX}-anythingllm:${ANYTHINGLLM_SERVER_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_ANYTHINGLLM} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-anythingllm:${ANYTHINGLLM_SERVER_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# NocoDB no-code table UI — port ${CADDY_PORT_NOCODB} → ${DOCKER_STACK_PREFIX}-nocodb:8080
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_NOCODB} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-nocodb:8080
+}
+
+# ---------------------------------------------------------------------------
+# Directus headless CMS — port ${CADDY_PORT_DIRECTUS} → ${DOCKER_STACK_PREFIX}-directus:8055
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_DIRECTUS} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-directus:8055
+}
+
+# ---------------------------------------------------------------------------
+# Teable spreadsheet UI — port ${CADDY_PORT_TEABLE} → ${DOCKER_STACK_PREFIX}-teable:3000
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_TEABLE} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-teable:3000
+}
+
+# ---------------------------------------------------------------------------
+# LightRAG GraphRAG API + UI — port ${CADDY_PORT_LIGHTRAG} → ${DOCKER_STACK_PREFIX}-lightrag:${LIGHTRAG_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_LIGHTRAG} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-lightrag:${LIGHTRAG_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Hindsight memory browser UI — port ${CADDY_PORT_HINDSIGHT_UI} → ${DOCKER_STACK_PREFIX}-hindsight:${HINDSIGHT_UI_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_HINDSIGHT_UI} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-hindsight:${HINDSIGHT_UI_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Hindsight memory REST API — port ${CADDY_PORT_HINDSIGHT_API} → ${DOCKER_STACK_PREFIX}-hindsight:${HINDSIGHT_API_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_HINDSIGHT_API} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-hindsight:${HINDSIGHT_API_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Mem0 agent memory API — port ${CADDY_PORT_MEM0} → ${DOCKER_STACK_PREFIX}-mem0:${MEM0_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_MEM0} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-mem0:${MEM0_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Docling document parser API — port ${CADDY_PORT_DOCLING} → ${DOCKER_STACK_PREFIX}-docling:5001
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_DOCLING} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-docling:5001
+}
+
+# ---------------------------------------------------------------------------
+# Infinity embedding server — port ${CADDY_PORT_EMBEDDING} → ${DOCKER_STACK_PREFIX}-embedding:${EMBED_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_EMBEDDING} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-embedding:${EMBED_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Infinity reranker server — port ${CADDY_PORT_RERANKER} → ${DOCKER_STACK_PREFIX}-reranker:${RERANK_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_RERANKER} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-reranker:${RERANK_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Ollama LLM server — port ${CADDY_PORT_OLLAMA} → ${DOCKER_STACK_PREFIX}-ollama:${OLLAMA_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_OLLAMA} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-ollama:${OLLAMA_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Qdrant REST API — port ${CADDY_PORT_QDRANT_REST} → ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_REST_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_QDRANT_REST} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-qdrant:${QDRANT_REST_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# Neo4j HTTP browser — port ${CADDY_PORT_NEO4J_HTTP} → ${DOCKER_STACK_PREFIX}-neo4j:${NEO4J_HTTP_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_NEO4J_HTTP} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-neo4j:${NEO4J_HTTP_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# MinIO S3-compatible API — port ${CADDY_PORT_MINIO_API} → ${DOCKER_STACK_PREFIX}-minio:${MINIO_API_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_MINIO_API} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-minio:${MINIO_API_PORT}
+}
+
+# ---------------------------------------------------------------------------
+# MinIO Console Web UI — port ${CADDY_PORT_MINIO_CONSOLE} → ${DOCKER_STACK_PREFIX}-minio:${MINIO_CONSOLE_PORT}
+# ---------------------------------------------------------------------------
+${CADDY_HOST}:${CADDY_PORT_MINIO_CONSOLE} {
+    ${CADDY_TLS_DIRECTIVE}
+    reverse_proxy ${DOCKER_STACK_PREFIX}-minio:${MINIO_CONSOLE_PORT}
+}
