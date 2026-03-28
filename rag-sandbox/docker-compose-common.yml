@@ -77,10 +77,14 @@ volumes:
   directus-uploads:
   teable-data:
 
-  # --- Proxy ---
+  # --- Proxy (Nginx Proxy Manager) ---
   npm-data:
   npm-letsencrypt:
   npm-mysql:
+
+  # --- Proxy (Caddy) ---
+  caddy-data:
+  caddy-config:
 
   # --- Observability ---
   litellm-data:

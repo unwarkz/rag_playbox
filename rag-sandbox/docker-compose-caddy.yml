@@ -1,0 +1,151 @@
+###############################################################################
+#  docker-compose-caddy.yml — Caddy reverse proxy (HTTP + TCP layer4)
+#
+#  Usage:
+#    docker compose -f docker-compose-common.yml \
+#                   -f docker-compose-caddy.yml up -d
+#
+#  Replace docker-compose-npm.yml with this file if you prefer Caddy over
+#  Nginx Proxy Manager.  Do NOT run both at the same time on the same ports.
+#
+#  External port mapping (host → Caddy → internal service):
+#    8021  RAGFlow Web UI        → {PREFIX}-ragflow:9380
+#    8022  RAGFlow REST API      → {PREFIX}-ragflow:9380
+#    8023  Dify LLM builder      → {PREFIX}-dify-web:3000
+#    8024  Open WebUI            → {PREFIX}-openwebui:8080
+#    8025  AnythingLLM           → {PREFIX}-anythingllm:3001
+#    8026  NocoDB                → {PREFIX}-nocodb:8080
+#    8027  Directus              → {PREFIX}-directus:8055
+#    8028  Teable                → {PREFIX}-teable:3000
+#    8029  LightRAG              → {PREFIX}-lightrag:9621
+#    8030  Hindsight UI          → {PREFIX}-hindsight:9999
+#    8031  Hindsight API         → {PREFIX}-hindsight:8889
+#    8032  Mem0                  → {PREFIX}-mem0:8888
+#    8033  Docling               → {PREFIX}-docling:5001
+#    8034  Infinity Embedding    → {PREFIX}-embedding:7997
+#    8035  Infinity Reranker     → {PREFIX}-reranker:7998
+#    8036  Ollama                → {PREFIX}-ollama:11434
+#    8037  PostgreSQL  [TCP]     → {PREFIX}-postgres:5432
+#    8038  Redis/Valkey [TCP]    → {PREFIX}-redis:6379
+#    8039  Qdrant REST           → {PREFIX}-qdrant:6333
+#    8040  Qdrant gRPC  [TCP]    → {PREFIX}-qdrant:6334
+#    8041  Neo4j HTTP            → {PREFIX}-neo4j:7474
+#    8042  Neo4j Bolt   [TCP]    → {PREFIX}-neo4j:7687
+#    8043  MinIO API             → {PREFIX}-minio:9000
+#    8044  MinIO Console         → {PREFIX}-minio:9001
+#
+#  All ports are plain HTTP by default (no TLS, any incoming address).
+#  Override ports, enable a hostname, or turn on Let's Encrypt in env/caddy.env.
+#
+#  ⚠ TCP proxying (ports 8037, 8038, 8040, 8042) requires the Caddy layer4
+#    plugin; this compose file builds a custom Caddy image that includes it.
+###############################################################################
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+services:
+  caddy:
+    build:
+      context: ./configs/caddy
+      dockerfile: Dockerfile
+
+    image: ${CADDY_IMAGE:-rag-sandbox-caddy:local}
+    container_name: ${DOCKER_STACK_PREFIX:-rag}-caddy
+
+    restart: ${RESTART_POLICY:-unless-stopped}
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-50m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+    # caddy.env — port assignments, hostname, TLS mode
+    env_file:
+      - env/caddy.env
+
+    environment:
+      # --- Stack identity (so Caddyfile can resolve container DNS names) ---
+      DOCKER_STACK_PREFIX: ${DOCKER_STACK_PREFIX:-rag}
+      TZ: ${TZ:-UTC}
+
+      # --- Internal service ports (kept in sync with each service's own env) ---
+      RAGFLOW_HTTP_PORT:          ${RAGFLOW_HTTP_PORT:-9380}
+      ANYTHINGLLM_SERVER_PORT:    ${ANYTHINGLLM_SERVER_PORT:-3001}
+      LIGHTRAG_PORT:              ${LIGHTRAG_PORT:-9621}
+      HINDSIGHT_UI_PORT:          ${HINDSIGHT_UI_PORT:-9999}
+      HINDSIGHT_API_PORT:         ${HINDSIGHT_API_PORT:-8889}
+      MEM0_PORT:                  ${MEM0_PORT:-8888}
+      EMBED_PORT:                 ${EMBED_PORT:-7997}
+      RERANK_PORT:                ${RERANK_PORT:-7998}
+      OLLAMA_PORT:                ${OLLAMA_PORT:-11434}
+      POSTGRES_PORT:              ${POSTGRES_PORT:-5432}
+      REDIS_PORT:                 ${REDIS_PORT:-6379}
+      QDRANT_REST_PORT:           ${QDRANT_REST_PORT:-6333}
+      QDRANT_GRPC_PORT:           ${QDRANT_GRPC_PORT:-6334}
+      NEO4J_HTTP_PORT:            ${NEO4J_HTTP_PORT:-7474}
+      NEO4J_BOLT_PORT:            ${NEO4J_BOLT_PORT:-7687}
+      MINIO_API_PORT:             ${MINIO_API_PORT:-9000}
+      MINIO_CONSOLE_PORT:         ${MINIO_CONSOLE_PORT:-9001}
+
+      # --- Service-level auth tokens (used by the auth logic in docker-entrypoint.sh) ---
+      # Set in env/caddy.env (mirrored from env/ollama.env and env/qdrant.env)
+      OLLAMA_BEARER_TOKEN:        ${OLLAMA_BEARER_TOKEN:-}
+      QDRANT_API_KEY:             ${QDRANT_API_KEY:-}
+
+    volumes:
+      - ./configs/caddy/Caddyfile.tmpl:/etc/caddy/Caddyfile.tmpl:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+    # ⚠ EXTERNAL PORTS — Caddy is the only service that publishes host ports
+    #   when using this file (replaces NPM for port exposure).
+    ports:
+      # --- AI / RAG UIs (HTTP) ---
+      - "${CADDY_PORT_RAGFLOW_WEB:-8021}:${CADDY_PORT_RAGFLOW_WEB:-8021}"
+      - "${CADDY_PORT_RAGFLOW_API:-8022}:${CADDY_PORT_RAGFLOW_API:-8022}"
+      - "${CADDY_PORT_DIFY:-8023}:${CADDY_PORT_DIFY:-8023}"
+      - "${CADDY_PORT_OPENWEBUI:-8024}:${CADDY_PORT_OPENWEBUI:-8024}"
+      - "${CADDY_PORT_ANYTHINGLLM:-8025}:${CADDY_PORT_ANYTHINGLLM:-8025}"
+      - "${CADDY_PORT_NOCODB:-8026}:${CADDY_PORT_NOCODB:-8026}"
+      - "${CADDY_PORT_DIRECTUS:-8027}:${CADDY_PORT_DIRECTUS:-8027}"
+      - "${CADDY_PORT_TEABLE:-8028}:${CADDY_PORT_TEABLE:-8028}"
+      - "${CADDY_PORT_LIGHTRAG:-8029}:${CADDY_PORT_LIGHTRAG:-8029}"
+      - "${CADDY_PORT_HINDSIGHT_UI:-8030}:${CADDY_PORT_HINDSIGHT_UI:-8030}"
+      - "${CADDY_PORT_HINDSIGHT_API:-8031}:${CADDY_PORT_HINDSIGHT_API:-8031}"
+      - "${CADDY_PORT_MEM0:-8032}:${CADDY_PORT_MEM0:-8032}"
+      - "${CADDY_PORT_DOCLING:-8033}:${CADDY_PORT_DOCLING:-8033}"
+      - "${CADDY_PORT_EMBEDDING:-8034}:${CADDY_PORT_EMBEDDING:-8034}"
+      - "${CADDY_PORT_RERANKER:-8035}:${CADDY_PORT_RERANKER:-8035}"
+      - "${CADDY_PORT_OLLAMA:-8036}:${CADDY_PORT_OLLAMA:-8036}"
+      # --- Infrastructure — TCP ports ---
+      - "${CADDY_PORT_POSTGRES:-8037}:${CADDY_PORT_POSTGRES:-8037}"
+      - "${CADDY_PORT_REDIS:-8038}:${CADDY_PORT_REDIS:-8038}"
+      - "${CADDY_PORT_QDRANT_REST:-8039}:${CADDY_PORT_QDRANT_REST:-8039}"
+      - "${CADDY_PORT_QDRANT_GRPC:-8040}:${CADDY_PORT_QDRANT_GRPC:-8040}"
+      - "${CADDY_PORT_NEO4J_HTTP:-8041}:${CADDY_PORT_NEO4J_HTTP:-8041}"
+      - "${CADDY_PORT_NEO4J_BOLT:-8042}:${CADDY_PORT_NEO4J_BOLT:-8042}"
+      - "${CADDY_PORT_MINIO_API:-8043}:${CADDY_PORT_MINIO_API:-8043}"
+      - "${CADDY_PORT_MINIO_CONSOLE:-8044}:${CADDY_PORT_MINIO_CONSOLE:-8044}"
+
+    networks:
+      # Needs both networks: frontend services (UIs) and internal services
+      # (databases, Mem0, Docling, Embedding, Reranker, Ollama).
+      - rag-internal
+      - rag-frontend
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget", "--no-verbose", "--tries=1", "-O", "/dev/null",
+          "http://localhost:2019/",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    cpus: ${CADDY_CPU_LIMIT:-1.0}
+    mem_limit: ${CADDY_MEM_LIMIT:-256m}
