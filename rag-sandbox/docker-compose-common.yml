@@ -54,6 +54,7 @@ volumes:
   minio-data:
   infinity-data:
   mysql_data:
+  omnidb-data:
 
   # --- AI / ML layer ---
   models-cache:
