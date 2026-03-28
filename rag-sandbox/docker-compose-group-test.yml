@@ -36,3 +36,4 @@ include:
   - docker-compose-litellm.yml
   #- docker-compose-langfuse.yml
   #- docker-compose-dbhub.yml
+  - docker-compose-caddy.yml
